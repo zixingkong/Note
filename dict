@@ -1,0 +1,224 @@
+python: dict(字典) 操作
+
+2017年12月09日 11:43:17
+阅读数：480
+key-value
+
+名称	    唯一性	  数据类型	         可变性
+key (键)	 唯一	  数字/字符串/元组	 不可
+value (值)	 不唯一	  任意	             可变
+字典定义
+
+dict = { "say": "hello", "python":3, 10:0.999, 20:["Hi", 60], (1, 2):True}
+
+assert dict == {'say': 'hello', 'python': 3, 10: 0.999, 20: ['Hi', 60], (1, 2):True}
+字典访问
+
+通过指定key值访问对应的value：
+
+dict = { "say": "hello", "python":3, 10:0.999, 20:["Hi", 60]}
+
+assert dict["say"] == "hello"
+assert dict[20] == ["Hi", 60]
+# 不存在时 报KeyError
+try:
+    print(dict["city"]) 
+except KeyError:
+    pass
+字典长度
+
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 字典长度
+assert len(dict) == 4
+字典打印
+
+字典打印（以字符串形式）。
+
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 字典打印（以字符串形式）
+assert str(dict) == "{'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}"
+字典复制
+
+浅复制。
+
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 字典复制
+assert dict.copy() == dict
+assert id(dict.copy()) != id(dict)
+字典取值
+
+不修改 字典：
+
+dict.get(key, default=None)
+
+Args:
+
+key: 字典中要查找的键。
+default: 如果指定键的值不存在时，返回 该默认值值 。
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 返回指定键的值
+assert dict.get("city") == "nanjing"
+
+# 返回指定键的值，如果值在字典中，default值无效
+assert dict.get("city", "Shanghai") == "nanjing"
+
+# 返回指定键的值，如果值不在字典中，返回default值
+assert dict.get("province", "jiangshu") == "jiangshu"
+修改 字典：
+
+dict.setdefault(key, default=None)
+
+Args:
+
+key: 字典中要查找的键。
+default: 如果指定键的值不存在时，返回 该默认值值，并 修改 字典，添加上该 key-value对 。
+dict = {'city': 'nanjing', 'university': 'NUAA'}    # nanjing
+
+# 和get()类似
+print(dict.setdefault('city'))
+
+# 但如果键不存在于字典中，将会返回default值。 并且修改字典，添加键并将值设为default
+print(dict.setdefault('college', 'cs'))    # cs
+print(dict.setdefault('location'))    # None
+print(dict)    #  {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'location': None}
+key 存在
+
+if i in dict
+
+dict = {'city': 'nanjing', 'university': 'NUAA'}
+
+# 检测键 city 是否存在
+if 'city' in dict:
+    print("键 city 存在")
+else :
+    print("键 city 不存在")
+可遍历的 key-value 数组
+
+dict.items()
+
+以列表 返回 可遍历的 (key-value)元组数组 。
+
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+print(type(dict.items())) # <class 'dict_items'>
+
+print(dict.items()) # dict_items([('city', 'nanjing'), ('university:', 'NUAA'), ('college', 'cs'), ('degree', 'master')])
+
+for i, j in dict.items():
+    print(i, ":\t", j)
+# city :     nanjing
+# university :   NUAA
+# college :  cs
+# degree :   master
+key列表
+
+dict.keys()
+
+以 dict列表 返回字典中的所有key。
+
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 以列表返回一个字典所有的key
+print(dict.keys())    # dict_keys(['city', 'university', 'college', 'degree'])
+
+for i in dict.keys():
+    print(i)
+# city
+# university
+# college
+# degree
+
+# 也可转化为list进行操作
+list_ = list(dict.keys())
+list_.sort()
+for i in list_:
+    print(i)
+# city
+# college
+# degree
+# university
+value列表
+
+dict.values()
+
+以 dict列表 返回字典中的所有value。
+
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 以列表返回一个字典所有的key
+print(dict.values())    # dict_values(['nanjing', 'NUAA', 'cs', 'master'])
+
+for i in dict.values():
+    print(i)
+# nanjing
+# NUAA
+# cs
+# master
+
+# 也可转化为list进行操作
+list_ = list(dict.values())
+list_.sort()
+for i in list_:
+    print(i)
+# NUAA
+# cs
+# master
+# nanjing
+字典合并
+
+通过 update 合并字典。
+
+dict = {"city":"nanjing", "university":"NUAA"}
+dict_2 = {"college":"cs", "degree":"master"}
+
+dict.update(dict_2)
+assert dict == {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+字典删除
+
+通过 .pop() ：
+
+dict.pop(key[,default])
+
+删除字典给定键 key 所对应的值，返回值为被删除的值。key值必须给出。 否则，返回default值。
+
+dict = {'city': 'nanjing', 'university': 'NUAA'}
+
+# 删除字典给定键 key 所对应的值，返回值为被删除的值。key值必须给出。 否则，返回default值。
+print(dict.pop('city'))    # nanjing
+print(dict)    # {'university': 'NUAA'}
+print(dict.pop('city', 'college'))    # college
+通过 .del() ：
+
+dict_1 = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 删除key-value:  'city': 'nanjing'
+del dict_1['city']    
+assert dict_1 == {'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 清空字典
+dict_1.clear()        
+assert dict_1 == {}
+
+# 删除字典
+del dict_1            
+try:
+    print(dict_1)
+except NameError:
+    pass
+通过 .popitem() ：
+
+dict.popitem()
+
+随机返回并删除字典中的一对键和值(一般删除末尾对)。
+
+dict = {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs', 'degree': 'master'}
+
+# 随机返回并删除字典中的一对键和值(一般删除末尾对)。
+print(dict.popitem())    # ('degree', 'master')
+print(dict)    # {'city': 'nanjing', 'university': 'NUAA', 'college': 'cs'}
+阅读更多
+版权声明：转载请注明出处	https://blog.csdn.net/JNingWei/article/details/78757673
