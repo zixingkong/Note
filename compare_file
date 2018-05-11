@@ -1,6 +1,0 @@
-python中提供了很便捷的方法来判断两个文件的内容是否相同，只要两行代码： 
->>>import filecmp 
->>>filecmp.cmp(r'e:\1.txt',r'e:\2.txt') 
-如果两个文件相同，会输出True，否则会输出false。 
-
-怎么样，很简单吧 				
