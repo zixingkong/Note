@@ -1,0 +1,53 @@
+Python断言的用法
+
+在开发一个程序时候，与其让它运行时崩溃，不如在它出现错误条件时就崩溃（返回错误）。这时候断言assert 就显得非常有用。
+
+assert的语法格式：
+
+assert expression
+它的等价语句为：
+
+if not expression:
+    raise AssertionError
+这段代码用来检测数据类型的断言，因为 a_str 是 str 类型，所以认为它是 int 类型肯定会引发错误。
+
+>>> a_str = 'this is a string'
+>>> type(a_str)
+<type 'str'>
+>>> assert type(a_str)== str
+>>> assert type(a_str)== int
+
+Traceback (most recent call last):
+  File "<pyshell#41>", line 1, in <module>
+    assert type(a_str)== int
+	
+	
+	
+>>> assert 1 == 0
+Traceback (most recent call last):
+ File "<stdin>", line 1, in <module>
+AssertionError
+>>> assert 1 == 1
+
+assert断言是一句必须等价于布尔真的判定！
+1 等于 0 就会有AssertionError异常
+1 不等于 0 就没有异常
+如果断言成功（如果为真）那么不执行任何操作！
+如果断言不成功，那么会触发AssertionError
+-------------------------------------------------------------
+我们还可使用异常参数：
+用法：assert expression 【，argument】（异常参数可有可无）
+
+>>> assert 1 == 0,'one does not equal zero'
+Traceback (most recent call last):
+ File "<stdin>", line 1, in <module>
+AssertionError: one does not equal zero
+-------------------------------------------------------------
+在try-except语句中使用assert：
+
+>>> try:
+...     assert 1 == 0,'one does not equal zero'
+... except AssertionError,args:
+...     print '%s:%s' % (args.__class__.__name__,args)
+... 
+AssertionError:one does not equal zero            #输出
