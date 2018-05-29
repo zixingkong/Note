@@ -14,6 +14,7 @@ IO；
 一、文件读写
 
 1、读文件：
+
 文本文件：
  with open('/path/to/file', 'r') as f:
      print(f.read())
@@ -32,6 +33,7 @@ IO；
  f = open('/Users/michael/gbk.txt', 'r', encoding='gbk', errors='ignore')
 
 2、写文件：
+
  f = open('/Users/michael/test.txt', 'w')
  f.write('Hello, world!')
  f.close()
@@ -44,6 +46,7 @@ IO；
 二、 StringIO和BytesIO
 
 1、StringIO：
+
  多时候，数据读写不一定是文件，也可以在内存中读写。
 StringIO顾名思义就是在内存中读写str。
 要把str写入StringIO，我们需要先创建一个StringIO，然后，像文件一样写入即可：
@@ -65,6 +68,7 @@ while True:
   print(s.strip())
 
 2、 BytesIO：
+
  StringIO操作的只能是str，如果要操作二进制数据，就需要使用BytesIO。
 BytesIO实现了在内存中读写bytes，我们创建一个BytesIO，然后写入一些bytes：
 from io import BytesIO
@@ -141,6 +145,7 @@ pickle.dumps() 方法把任意对象序列化成一个 bytes ，然后，就可�
 {'age': 20, 'score': 88, 'name': 'Bob'}
 
 JSON：
+
  如果我们要在不同的编程语言之间传递对象，就必须把对象序列化为标准格式，比如XML，但更好的方法是序列化为JSON，因为JSON表示出来就是一个字符串，可以被所有语言读取，也可以方便地存储到磁盘或者通过网络传输。JSON不仅是标准格式，并且比XML更快，而且可以直接在Web页面中读取，非常方便。
 
  JSON表示的对象就是标准的JavaScript语言的对象，JSON和Python内置的数据类型对应如下：
