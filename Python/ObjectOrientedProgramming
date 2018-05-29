@@ -1,0 +1,185 @@
+ 面向对象编程——Object Oriented Programming，简称OOP，是一种程序设计思想。OOP把对象作为程序的基本单元，一个对象包含了数据和操作数据的函数。
+
+ 面向过程的程序设计把计算机程序视为一系列的命令集合，即一组函数的顺序执行。
+ 而面向对象的程序设计把计算机程序视为一组对象的集合，而每个对象都可以接收其他对象发过来的消息，并处理这些消息，计算机程序的执行就是一系列消息在各个对象之间传递。
+ 在Python中，所有数据类型都可以视为对象，当然也可以自定义对象。自定义的对象数据类型就是面向对象中的类
+（Class）的概念。
+ 给对象发消息实际上就是调用对象对应的关联函数，我们称之为对象的方法（Method）。
+ 面向对象的设计思想是抽象出Class，根据Class创建Instance。
+面向对象的抽象程度又比函数要高，因为一个Class既包含数据，又包含操作数据的方法。
+
+一、类和实例：
+
+ 通过定义一个特殊的 __init__ 方法，在创建实例的时候，就把 name ， score 等属性绑上去：
+ 和普通的函数相比，在类中定义的函数只有一点不同，就是第一个参数永远是实例变量 self ，并且，调用时，不用传递该参数。
+
+数据封装：
+ 外部看 Student 类，就只需要知道，创建实例需要给出 name 和 score ，而如何打印，都是在 Student类的内部定义的，这些数据和逻辑被“封装”起来了，调用很容易，但却不用知道内部实现的细节。封装的另一个好处是可以给 Student 类增加新的方法，比如 get_grade 。
+
+小结： 类是创建实例的模板，而实例则是一个一个具体的对象，各个实例拥有的数据都互相独立，互不影响；方法就是与实例绑定的函数，和普通函数不同，方法可以直接访问实例的数据；通过在实例上调用方法，我们就直接操作了对象内部的数据，但无需知道方法内部的实现细节。和静态语言不同，Python允许对实例变量绑定任何数据，也就是说，对于两个实例变量，虽然它们都是同一个类的不同实例，但拥有的变量名称都可能不同。
+
+二、访问限制：
+
+ 但是，从前面Student类的定义来看，外部代码还是可以自由地修改一个实例的 name 、 score 属性：
+>>> bart = Student('Bart Simpson', 98)
+>>> bart.score
+98
+>>> bart.score = 59
+>>> bart.score
+59
+ 如果要让内部属性不被外部访问，可以把属性的名称前加上两个下划线 __ ，在Python中，实例的变量名如果以 __ 开头，就变成了一个私有变量（private），只有内部可以访问，外部不能访问，所以，我们把Student类改一改：
+class Student(object):
+def __init__(self, name, score):
+self.__name = name
+self.__score = score
+def print_score(self):
+print('%s: %s' % (self.__name, self.__score))
+
+但是如果外部代码要获取name和score怎么办？增加 get_name 和 get_score 这样的方法：
+
+注意： 在Python中，变量名类似 __xxx__ 的，也就是以双下划线开头，并且以双下划线结尾的，是特殊变量，特殊变量是可以直接访问的，不是private变量，所以，不能用 __name__ 、 __score__ 这样的变量名。有些时候，你会看到以一个下划线开头的实例变量名，比如 _name ，这样的实例变量外部是可以访问的，但是，按照约定
+俗成的规定，当你看到这样的变量时，意思就是，“虽然我可以被访问，但是，请把我视为私有变量，不要随意访问”。双下划线开头的实例变量是不是一定不能从外部访问呢？其实也不是。不能直接访问 __name 是因为Python解释器对外把 __name 变量改成了 _Student__name ，所以，仍然可以通过 _Student__name 来访问 __name 变量：
+>>> bart._Student__name
+'Bart Simpson'
+
+所以啊，亲爱的，一切全靠自觉。
+
+三、继承和多态：
+
+ 当子类和父类都存在相同的 run() 方法时，我们说，子类的 run() 覆盖了父类的 run() ，在代码运行的时候，总是会调用
+子类的 run() 。这样，我们就获得了继承的另一个好处：多态。
+ 要理解什么是多态，我们首先要对数据类型再作一点说明。当我们定义一个class的时候，我们实际上就定义了一种数据类
+型。我们定义的数据类型和Python自带的数据类型，比如str、list、dict没什么两样：
+ 判断一个变量是否是某个类型可以用 isinstance() 判断：
+>>> isinstance(a, list)
+True
+
+ 多态真正的威力：调用方只管调用，不管细节，而当我们新增一种 Animal 的子类时，只要确保 run() 方法编写正确，不用管原来的代码是如何调用的。这就是著名的“开闭”原则：
+对扩展开放：允许新增 Animal 子类；
+对修改封闭：不需要修改依赖 Animal 类型的 run_twice() 等函数。
+
+ 对于Python这样的动态语言来说，则不一定需要传入 Animal 类型。我们只需要保证传入的对象有一个 run() 方法就可以
+了：
+class Timer(object):
+def run(self):
+print('Start...')
+这就是动态语言的“鸭子类型”，它并不要求严格的继承体系，一个对象只要“看起来像鸭子，走起路来像鸭子”，那它就可以被看做是鸭子。
+Python的“file-like object“就是一种鸭子类型。对真正的文件对象，它有一个 read() 方法，返回其内容。但是，许多对象，只要有 read() 方法，都被视为“file-like object“。许多函数接收的参数就是“file-like object“，你不一定要传入真正的文件对象，完全可以传入任何实现了 read() 方法的对象。
+
+小结：
+ 继承可以把父类的所有功能都直接拿过来，这样就不必重零做起，子类只需要新增自己特有的方法，也可以把父类不适合的方法覆盖重写。动态语言的鸭子类型特点决定了继承不像静态语言那样是必须的。
+
+四、获取对象信息：
+
+ 当我们拿到一个对象的引用时，如何知道这个对象是什么类型、有哪些方法呢？
+
+使用type()
+
+首先，我们来判断对象类型，使用 type() 函数：
+
+基本类型都可以用 type() 判断：
+ type(123)
+<class 'int'>
+>>> type('str')
+<class 'str'>
+>>> type(None)
+<type(None) 'NoneType'>
+如果一个变量指向函数或者类，也可以用 type() 判断：
+>>> type(abs)
+<class 'builtin_function_or_method'>
+>>> type(a)
+<class '__main__.Animal'>
+但是 type() 函数返回的是什么类型呢？它返回对应的Class类型。如果我们要在 if 语句中判断，就需要比较两个变量的
+type类型是否相同：
+ 但是 type() 函数返回的是什么类型呢？它返回对应的Class类型。
+
+ >>> type('abc')==str
+True
+
+ 但如果要判断一个对象是否是函数怎么办？可以使用 types 模块中定义的常量：
+>>> import types
+>>> def fn():
+... pass
+...
+>>> type(fn)==types.FunctionType
+True
+>>> type(abs)==types.BuiltinFunctionType
+True
+>>> type(lambda x: x)==types.LambdaType
+True
+>>> type((x for x in range(10)))==types.GeneratorType
+True
+
+使用isinstance()
+
+ isinstance() 就可以告诉我们，一个对象是否是某种类型。
+
+ 能用 type() 判断的基本类型也可以用 isinstance() 判断：
+>>> isinstance('a', str)
+True
+>>> isinstance(123, int)
+True
+>>> isinstance(b'a', bytes)
+True
+ 并且还可以判断一个变量是否是某些类型中的一种，比如下面的代码就可以判断是否是list或者tuple：
+>>> isinstance([1, 2, 3], (list, tuple))
+True
+>>> isinstance((1, 2, 3), (list, tuple))
+True
+
+使用dir()
+
+ 如果要获得一个对象的所有属性和方法，可以使用 dir() 函数，它返回一个包含字符串的list，
+ 仅仅把属性和方法列出来是不够的，配合 getattr() 、 setattr() 以及 hasattr() ，我们可以直接操作一个对象的状态：
+>>> class MyObject(object):
+... def __init__(self):
+... self.x = 9
+... def power(self):
+... return self.x * self.x
+...
+>>> obj = MyObject()
+紧接着，可以测试该对象的属性：
+>>> hasattr(obj, 'x') # 有属性'x'吗？
+True
+>>> obj.x
+9
+>>> hasattr(obj, 'y') # 有属性'y'吗？
+False
+>>> setattr(obj, 'y', 19) # 设置一个属性'y'
+>>> hasattr(obj, 'y') # 有属性'y'吗？
+True
+>>> getattr(obj, 'y') # 获取属性'y'
+19
+>>> obj.y # 获取属性'y'
+19
+如果试图获取不存在的属性，会抛出AttributeError的错误：
+>>> getattr(obj, 'z') # 获取属性'z'
+Traceback (most recent call last):
+File "<stdin>", line 1, in <module>
+AttributeError: 'MyObject' object has no attribute 'z'
+可以传入一个default参数，如果属性不存在，就返回默认值：
+>>> getattr(obj, 'z', 404) # 获取属性'z'，如果不存在，返回默认值404
+404
+也可以获得对象的方法：
+>>> hasattr(obj, 'power') # 有属性'power'吗？
+True
+>>> getattr(obj, 'power') # 获取属性'power'
+<bound method MyObject.power of <__main__.MyObject object at 0x10077a6a0>>
+>>> fn = getattr(obj, 'power') # 获取属性'power'并赋值到变量fn
+>>> fn # fn指向obj.power
+<bound method MyObject.power of <__main__.MyObject object at 0x10077a6a0>>
+>>> fn() # 调用fn()与调用obj.power()是一样的
+81
+小结:
+通过内置的一系列函数，我们可以对任意一个Python对象进行剖析，拿到其内部的数据。要注意的是，只有在不知道对象
+信息的时候，我们才会去获取对象信息。
+ 通过内置的一系列函数，我们可以对任意一个Python对象进行剖析，拿到其内部的数据。要注意的是，只有在不知道对象
+信息的时候，我们才会去获取对象信息。
+
+五、实例属性和类属性：
+
+ class中定义属性，这种属性是类属性，归 Student 类所有：
+class Student(object):
+   name = 'Student'
+
+ 在编写程序的时候，千万不要把实例属性和类属性使用相同的名字，因为相同名称的实例属性将屏蔽掉类属性，但是当你删除实例属性后，再使用相同的名称，访问到的将是类属性。
