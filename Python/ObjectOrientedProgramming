@@ -73,7 +73,7 @@ Python的“file-like object“就是一种鸭子类型。对真正的文件对�
 
  当我们拿到一个对象的引用时，如何知道这个对象是什么类型、有哪些方法呢？
 
-使用type()
+1、使用type()
 
 首先，我们来判断对象类型，使用 type() 函数：
 
@@ -110,7 +110,7 @@ True
 >>> type((x for x in range(10)))==types.GeneratorType
 True
 
-使用isinstance()
+2、使用isinstance()
 
  isinstance() 就可以告诉我们，一个对象是否是某种类型。
 
@@ -127,7 +127,7 @@ True
 >>> isinstance((1, 2, 3), (list, tuple))
 True
 
-使用dir()
+3、使用dir()
 
  如果要获得一个对象的所有属性和方法，可以使用 dir() 函数，它返回一个包含字符串的list，
  仅仅把属性和方法列出来是不够的，配合 getattr() 、 setattr() 以及 hasattr() ，我们可以直接操作一个对象的状态：
