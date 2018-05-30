@@ -7,14 +7,17 @@
 
  如果我们想要限制实例的属性怎么办？比如，只允许对Student实例添加 name 和 age 属性。
 为了达到限制的目的，Python允许在定义class的时候，定义一个特殊的 __slots__ 变量，来限制该class实例能添加的属性：
+
 class Student(object):
     __slots__ = ('name', 'age') # 用tuple定义允许绑定的属性名称
+
 注意：使用 __slots__ 要注意， __slots__ 定义的属性仅对当前类实例起作用，对继承的子类是不起作用的。
 
 二、 使用@property
 
  有没有既能检查参数，又可以用类似属性这样简单的方式来访问类的变量呢？
  还记得装饰器（decorator）可以给函数动态加上功能吗？对于类的方法，装饰器一样起作用。Python内置的 @property 装饰器就是负责把一个方法变成属性调用的：
+
 class Student(object):
    @property
    def score(self):
@@ -43,6 +46,7 @@ ValueError: score must between 0 ~ 100!
 三、 多重继承
 
  通过多重继承，一个子类就可以同时获得多个父类的所有功能。
+
  class Dog(Mammal, Runnable):
    pass
 
@@ -50,12 +54,16 @@ ValueError: score must between 0 ~ 100!
 
  为了更好地看出继承关系，我们把 Runnable 和 Flyable 改为 RunnableMixIn 和 FlyableMixIn 。类似的，你还可以定义出
 肉食动物 CarnivorousMixIn 和植食动物 HerbivoresMixIn ，让某个动物同时拥有好几个MixIn：
+
 class Dog(Mammal, RunnableMixIn, CarnivorousMixIn):
    pass
+
 MixIn的目的就是给一个类增加多个功能，这样，在设计类的时候，我们优先考虑通过多重继承来组合多个MixIn的功能，而不是设计多层次的复杂的继承关系。
 如果你打算搞一个更先进的协程模型，可以编写一个 CoroutineMixIn ：
+
 class MyTCPServer(TCPServer, CoroutineMixIn):
     pass
+
 这样一来，我们不需要复杂而庞大的继承链，只要选择组合不同的类的功能，就可以快速构造出所需的子类。
 
 小结： 由于Python允许使用多重继承，因此，MixIn就是一种常见的设计。只允许单一继承的语言（如Java）不能使用MixIn的设计。
@@ -77,6 +85,7 @@ Student object (name: Michael)
 
  这是因为直接显示变量调用的不是 __str__() ，而是 __repr__() ，两者的区别是 __str__() 返回用户看到的字符串，
 而 __repr__() 返回程序开发者看到的字符串，也就是说， __repr__() 是为调试服务的。
+
  class Student(object):
     def __init__(self, name):
        self.name = name
@@ -89,9 +98,9 @@ Student object (name: Michael)
  2、__iter__：
 
  如果一个类想被用于 for ... in 循环，类似list或tuple那样，就必须实现一个 __iter__() 方法，该方法返回一个迭代对
-象，然后，Python的for循环就会不断调用该迭代对象的 __next__() 方法拿到循环的下一个值，直到遇到 StopIteration
-错误时退出循环。
+象，然后，Python的for循环就会不断调用该迭代对象的 __next__() 方法拿到循环的下一个值，直到遇到 StopIteration错误时退出循环。
 我们以斐波那契数列为例，写一个Fib类，可以作用于for循环：
+
 class Fib(object):
    def __init__(self):
       self.a, self.b = 0, 1 # 初始化两个计数器a，b
@@ -104,6 +113,7 @@ class Fib(object):
       if self.a > 100000: # 退出循环的条件
           raise StopIteration();
       return self.a # 返回下一个值
+
 现在，试试把Fib实例作用于for循环：
 >>> for n in Fib():
 ... print(n)
@@ -122,6 +132,7 @@ class Fib(object):
 
  Fib实例虽然能作用于for循环，看起来和list有点像，但是，把它当成list来使用还是不行，
  要表现得像list那样按照下标取出元素，需要实现 __getitem__() 方法：
+
 class Fib(object):
    def __getitem__(self, n):
       a, b = 1, 1
@@ -129,9 +140,12 @@ class Fib(object):
          a, b = b, a + b
       return a
  但是list有个神奇的切片方法：
+
 >>> list(range(100))[5:10]
 [5, 6, 7, 8, 9]
+
 对于Fib却报错。原因是 __getitem__() 传入的参数可能是一个int，也可能是一个切片对象 slice ，所以要做判断：
+
  class Fib(object):
     def __getitem__(self, n):
        if isinstance(n, int): # n是索引
@@ -151,6 +165,7 @@ class Fib(object):
                  L.append(a)
               a, b = b, a + b
            return L
+
 现在试试Fib的切片：
 >>> f = Fib()
 >>> f[0:5]
@@ -168,12 +183,14 @@ class Fib(object):
 
 4、 __getattr__：
 
- ython还有另一个机制，那就是写一个 __getattr__() 方法，动态返回一个属性。
+ python还有另一个机制，那就是写一个 __getattr__() 方法，动态返回一个属性。
+
  class Student(object):
-def __getattr__(self, attr):
-if attr=='age':
-return lambda: 25
-raise AttributeError('\'Student\' object has no attribute \'%s\'' % attr)
+    def __getattr__(self, attr):
+       if attr=='age':
+           return lambda: 25
+       raise AttributeError('\'Student\' object has no attribute \'%s\'' % attr)
+
 这实际上可以把一个类的所有属性和方法调用全部动态化处理了，不需要任何特殊手段。
 这种完全动态调用的特性有什么实际作用呢？作用就是，可以针对完全动态的情况作调用。
 
