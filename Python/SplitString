@@ -1,4 +1,0 @@
-至少两个空格分隔字符串
-import re
-
-re.split(r'\s{2,}', str)
