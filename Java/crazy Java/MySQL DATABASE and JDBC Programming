@@ -179,13 +179,62 @@ MYSQL的初始命令：
 3、索引：
 索引是存放在模式（schema）中的一个数据库对象，虽然索引总是从属于数据表，但它也和数据表一样属于数据库对象。
 创建索引的唯一作用就是加速对表的查询，索引通过使用快速路径访问方法来快速定位数据，从而减少了磁盘的I/O。
+		创建约束：
+		create index index_name
+		on table_name (column[,column]...);
+		实例：
+		create index emp_last_name_idx
+		on employees(last_name);
+		删除索引：
+		drop index 索引名 on 表名;
+4、视图：
+	视图只是一个或多个数据表中数据的逻辑显示。
+	create or replace view 视图名
+	as 
+	subquery;
+	视图的本质：一条被命名的SQL查询语句。
+	实例：
+	create or replace view view_test
+	as 
+	select teacher_name,teacher_pass from teacher_table;
+	删除视图：
+	drop view 视图名
+5、DML语句语法
+	完成如下三个任务:
+		插入新数据；
+		修改已有数据；
+		删除不需要的数据
+	
+DML语句由insert into、update和delete from三个命令组成。
 
+		a)、insert into语句
+			insert into table_name [(column [,column...])]
+			values(value [,value..]);
+			实例：
+			insert into teacher_table2(teacher_name)
+			values('xyz');
+			实例：
+			insert into student_table2
+			values(null,'张三',2);
+			插入多条记录：
+			insert into teacher_table2
+			values(null,"Yeeku"),
+						(null,"Sharfly");
 
-
-
-
-
-
+		b)、update语句：
+		update table_name
+		set column1=value1[,column = value2]...
+		[WHERE condition];
+		实例：
+		update teacher_table2
+		set teacher_name = '孙悟空';
+		实例：
+		update teacher_table2
+		set teacher_name='猪八戒'
+		where teacher_id > 1;
+		c)、delete from语句：
+		delete from table_name
+		[WHERE condition];
 
 
 
