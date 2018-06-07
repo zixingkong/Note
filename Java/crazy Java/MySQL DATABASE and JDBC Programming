@@ -1,0 +1,198 @@
+数据库系统分类：
+	1、网状型数据库
+	2、层次型数据库
+	3、关系数据库
+	4、面向对象数据库
+其中，关系数据库是理论最成熟、应用最广泛的数据库。
+
+数据表是存储数据的逻辑单元，由行和列组成的表格。
+行：记录
+列：字段
+唯一得标识某行：主键列。
+
+MYSQL的初始命令：
+	查看当前实例包含多少个数据库：show databases;
+	创建新的数据库：create database {IF NOT EXISTS] 数据库名；
+	删除制定数据库： drop database 数据库名；
+	进入指定数据库：use 数据库名；
+	查询当前数据库下包含多少个数据表：show tables；
+	查看指定数据表的表结构：desc 表名；
+执行mysql命令的语法： mysql -p 密码 -u 用户名 -h 主机名  --default-character-set=utf8
+
+一、SQL语句基础：
+	SQL： Structured Query language,即结构化查询语言。
+
+标准的SQL语句：
+		查询语句：select
+		DML（Data Manipulation Language，数据操作原因）：select update delete
+		DDL（Data Definition Language，数据定义语言）：create alter drop truncate 
+		DCL（Data Control Language,数据控制语句）：grant revoke
+
+1、DDL语句：创建（create）、删除（delete）和修改（alter）数据库对象。
+		a)、创建表的语法：
+				create table [模式名.]表名
+				（
+						columnName1 datatype [default expr],
+						...
+					)
+			实例：
+				create table test
+				(
+					test_id int,
+					test_price decimal,
+					test_name varchar(255) default 'xxx',
+					test_desc text,
+					test_img blob,
+					test_date datetime
+				);
+		b)、修改表结构的语法：
+				alter table 表名
+				add
+				(
+					column_name1 datatype [default expr],
+					...
+				)
+				实例：
+					alter table hehe
+					add
+					(
+						aaa varchar(255) default 'xxx',
+						bbb varchar(255)
+					)
+					修改列定义：
+					alter table 表名
+					modify column_name datatype [default expr] [first|after col_name];
+					实例：
+						alter table hehe
+						modify bbb int;
+					删除列定义：
+					alter table 表名
+					drop column_name;
+					重命名数据表：
+					alter table 表名
+					rename to 新表名;
+					完全改变列定义：
+					alter table 表名
+					change old_column_name new_column_name type [default expr]  [first|after col_name];
+		c)、删除表的语法：
+			drop table 表名;
+		d)、truncate 表：删除表里的全部数据，但保留表结构
+			truncate 表名;
+			
+2、数据库约束
+	约束是在表上强制执行的数据校验规则，约束主要用于保证数据库里数据的完整性。
+	5种完整性约束：
+		NOT NULL ：非空约束，指定某列不能为空。
+		UNIQUE：唯一约束，指定某列或者几列组合不能重复。
+		PRIMARY KEY：主键，指定该列的值可以唯一地标识该条记录。
+		FOREIGN KEY：外键，指定该行记录从属于主表中的一条记录，主要用于保证参照完整性。
+		CHECK：检查，指定一个布尔表达式，用于指定对应列的值必须满足该表达式。
+	a)、NOT NULL约束
+	实例：
+		create table hehe
+		(
+			hehe_id int not null,
+			hehe_name varchar(255) default 'xyz' not null,
+			hehe_gender varchar(2) null
+    );
+	b)、UNIQUE约束
+		用于保证指定列和指定列组合不允许出现重复值。
+		列级约束语法：
+		create table unique_test
+		(
+			test_id int not null,
+			test_name varchar(255) unique
+     );
+		表级约束语法：
+		[constraint 约束名] 约束定义
+		实例：
+		create table unique_test2
+		(
+			test_id int not null,
+			test_name varchar(255),
+			test_pass varchar(255),
+			unique (test_name),
+			constraint test2_uk unique(test_pass)
+		);
+		删除约束：
+		alter table unique_test3
+		drop index test3_uk;
+		c)、PRIMARY KEY约束：
+			主键约束相当于非空约束和唯一约束，即主键约束的列既不能出现重复值，也不允许出现null值。主键列的值可用于唯一地标识表中的一条记录。
+			主键是表中能唯一确定一行记录的字段或字段组合。
+			列级约束语法：
+			create table primary_test
+			(
+				test_id int primary_key,
+				test_name varchar(255)
+			);
+			表级约束语法：
+			create table primary_test2
+			(
+				test_id int not null,
+				test_name varchar(255),
+				test_pass varchar(255),
+				constraint test2_pk primary key(test_id)
+			);
+			删除主键约束：
+			alter table primary_test3
+			drop primary key;
+			设置自增长的主键列：
+			create table primary_test4
+			(
+				test_id int auto_increment primary key,
+				test_name varchar(255),
+				test_pass varchar(255)
+			);
+			d)、FOREIGN KEY约束：
+			外键约束主要用于保证一个或两个数据表之间的参照完整性，外键是构建于一个表的两个字段或者两个表的两个字段之间的参照关系。
+			外键确保了相关的两个字段的参照关系：从表外键列的值必须在主表被参照列的值范围之内，或者为空。
+			从表外键参照的只能是主表主键列或者唯一键列，这样才可以保证从表记录可以准确定位到被参照的主表记录。
+			列级约束语法：
+			create table teacher_table
+			(
+				teacher_id int auto_increment,
+				teacher_name varchar(255),
+				primary key(teacher_id)
+			);
+			create table student_table
+			(
+				student_id int auto_increment primary key,
+				student_name varchar(255),
+				java_teacher int references teacher_table(teacher_id)
+			);
+			表级约束语法：
+			create table teacher_table1
+			(
+				teacher_id int auto_increment,
+				teacher_name varchar9255），
+				primary key(teacher_id)
+			);
+			create table student_table1
+			(
+				student_id int auto_increment primary key,
+				student_name varchar(255),
+				java_teacher int,
+				foreign key(java_teacher) references teacher_table1(teacher_id) 
+			);
+			e)、CHECK 约束：
+3、索引：
+索引是存放在模式（schema）中的一个数据库对象，虽然索引总是从属于数据表，但它也和数据表一样属于数据库对象。
+创建索引的唯一作用就是加速对表的查询，索引通过使用快速路径访问方法来快速定位数据，从而减少了磁盘的I/O。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
