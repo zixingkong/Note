@@ -1,0 +1,120 @@
+Linux 使用getopts命令获取命令行参数
+
+2017年07月30日 13:20:47
+阅读数：31160
+Linux getopts命令用于获取命令行中的参数
+
+调用格式：
+
+getopts option_string variable
+  
+参数说明： 
+option_string 选项名称 
+variable 选项的值 
+  
+选项之间使用冒号:分隔，也可以直接连接， : 表示选项后面有传值。 
+当getopts命令发现冒号后，会从命令行该选项后读取该值。如该值存在，将保存在特殊的变量OPTARG中。
+
+当option_string用:开头，getopts会区分invalid option错误和miss option argument错误。
+
+invalid option时, varname会被设成? 
+miss option argument时，varname会被设成:
+
+如果option_string不用:开头，invalid option错误和miss option argument错误都会使varname被设成?。 
+
+
+getopts包含两个内置变量，OPTARG和OPTIND
+
+OPTARG 保存选项后的参数值 
+OPTIND 表示命令行下一个选项或参数的索引 
+
+
+例子1，使用getopts命令获取参数
+
+#!/bin/bash
+
+while getopts a:b:c:d opts; do
+    case $opts in
+        a) a=$OPTARG ;;
+        b) b=$OPTARG ;;
+        c) c=$OPTARG ;;
+        d) d=$OPTARG ;;
+        ?) ;;
+    esac
+done
+
+echo "a=$a"
+echo "b=$b"
+echo "c=$c"
+echo "d=$d"
+
+exit 0
+执行输出
+
+./test.sh -a 1 -b 2 -c 3 -d 4
+a=1
+b=2
+c=3
+d=
+option_string a:b:c:d 
+a,b,c后都有:，d后没有: 
+所以可以获取到a,b,c的值 
+
+
+例子2，option_string前加:
+
+上例中，如果a,b,c任意一个没有传值，将会提示出错。例如 -c 不传值。
+
+./test.sh -a 1 -b 2 -c
+./test.sh: option requires an argument -- c
+a=1
+b=2
+c=
+d=
+我们在option_string前加上:，则可以屏蔽这个错误。
+
+#!/bin/bash
+
+while getopts :a:b:c:d opts; do
+    case $opts in
+        a) a=$OPTARG ;;
+        b) b=$OPTARG ;;
+        c) c=$OPTARG ;;
+        d) d=$OPTARG ;;
+        ?) ;;
+    esac
+done
+
+echo "a=$a"
+echo "b=$b"
+echo "c=$c"
+echo "d=$d"
+
+exit 0
+执行输出
+
+./test.sh -a 1 -b 2 -c
+a=1
+b=2
+c=
+d=
+在option_string前加上:，可以屏蔽缺失传值的错误，但如果缺失的是前面选项的值，那么获取到的值将会错误。
+
+例如缺失a的传值，命令会把-a后的-b作为了-a的值，导致错误。
+
+./test.sh -a -b 2 -c 3
+a=-b
+b=
+c=
+d=
+因此使用getopts命令时，对于没有传值的选项，选项名称也不要加入命令行中。 
+例如a不传值，则-a不要加入命令行。
+
+./test.sh -b 2 -c 3
+a=
+b=2
+c=3
+d=
+
+
+Linux的getopts命令并不支持多个字符组合的参数名称（longopts），如需要获取long opts参数，可以使用php的getopt方法实现，参考：《php cli模式下获取参数的方法》
