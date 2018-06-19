@@ -66,3 +66,9 @@
 7、在处理数据后运行脚本：
 		eg: gawk 'BEGIN {print "The data4 File Contents: "} {print $0} END {print "END of File"}' data4 
 
+在gawk编程语言中：
+		i)定义变量来保存数据
+		ii)使用算术和字符串操作符来处理数据
+		iii)使用结构化编程概念，比如if-then语句和循环，来为数据处理增加逻辑
+		iv）提取数据文件中的数据元素并将它们按照另一顺序或格式重新放置，从而生成格式化报告。
+
