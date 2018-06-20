@@ -1,0 +1,122 @@
+
+
+一、定义
+  正则表达式是你定义的、Linux工具用来过滤文本的模式模板。
+
+二、正则表达式的类型：
+		POSIX 基本正则表达式（BRE）引擎
+		POSIX 扩展正则表达式（ERE）引擎
+
+三、定义BRE模式：
+	1、纯文本
+		eg: echo "This books are expensive" | sed -n '/book/p'
+
+	2、特殊字符
+		.  *  []  ^  $  {}  \  +  ?  |  ()
+
+		eg: echo 'The book cost 10 $' | sed -n '/\$/p'
+
+	3、锚字符
+		锁定在行首： ^  eg: echo 'The book cost 10 $' | sed -n '/^The/p'
+		锁定在行尾： $  eg: echo 'The book is good book' | sed -n '/book$/p'
+		组合锚点：      eg: sed -n '/^This is a good book$/p' data4
+		
+		从文档中删除空白行的有效方法：sed  '/^$/d' data5
+	
+	4、点字符
+		匹配任意单个字符，除了换行符。
+		eg: sed -n '/.at/p' data6
+
+	5、字符组
+		eg: echo "Yes" | sed -n '/[Yy]es/p'
+
+	6、排除字符组：
+		eg: sed -n '/[^ch]at/p'  data6
+
+	7、使用区间
+		eg: sed -n '/[a-ch-m]/p' data6
+
+	8、特殊字符组
+		eg: echo "abc" | sed -n '/[[:alpha:]]/p'
+
+	9、星号
+		用途1：广泛用于处理有常见拼写错误或在不同语言中有拼写变种的单词。
+				eg: echo "I had a potatoe with my launch" | sed -n '/potatoe*/p'
+
+		用途2：将点特殊字符和星号特殊字符组合起来，这个组合提供了匹配任意多个任意字符的模式。
+				eg: echo "this is a regular pattern expression" | sed '/regular.*exprression/p'
+		用途3：用在字符数组上
+				eg: echo "bet" | sed -n '/b[ae]*t/p'
+
+三、扩展正则表达式
+
+	可用在gawk程序，但不能用在sed编辑器。
+	1、问号：表明前面的字符出现0次或1次。
+				eg: echo "bet" | gawk '/be?t/{print $0}'
+						echo "bat" | gawk '/b[ae]?t/{print $0}'
+
+	2、加号：表明前面的字符出现一次或多次。
+				eg: echo "beet" | gawk '/be+t/{print $0}'
+						echo "beat" | gawk '/b[ae]+t/{pring $0}'
+
+	3、花括号：允许你为可重复的正则表达式指定一个上限，这通常称为区间。
+			你可以用两个格式指定区间：
+			m    ---------  正则表达式准确出现m次
+			m,n  ---------  正则表达式至少出现m次，至多出现n次。
+
+					eg:  echo "beet" | gawk --re-interval  '/be{1,2}t/{print $0}'
+							echo "beat" | gawk --re-interval '/b[ae]{1,2}t/{print $0}'
+
+	4、管道符号:管道符号允许你在检查数据流时，用逻辑OR方式指定正则表达式引擎要用的两个或多个模式。
+			eg: echo "The cat is asleep" | gawk '/dog|cat/{print $0}'
+					echo "He has a hat." | gawk '/[ch]at|dog/{print $0}'
+
+	5、聚合表达式
+			正则表达式模式也可以用圆括号括起来，当你聚合正则表达式模式时，该组就会被当成标准字符，你可以给该组使用特殊字符。
+					eg: echo "Saturday" | gawk '/Sat(urday)?/{print $0}'
+							echo "cab" | gawk '/(c|b)a(b|t)/{print $0}'
+
+四、实用中的正则表达式
+	1、目录文件计数：
+			#!/bin/bash
+#Count files in $PATH directory.
+
+mypath=$(echo $PATH | sed 's/:/ /g')
+count=0
+for directory in $mypath
+do
+    check=$(ls $directory)
+    for item in $check
+    do
+        count=$[ $count + 1 ]
+    done
+    echo "$directory --- $count"
+    count=0
+done
+
+	2、验证电话号码：
+	几种常见的显示电话号码：
+			(123)456-7890
+			(123) 456-7890
+			123-456-7890
+			123.456.7890
+    
+		isphone.sh:
+			 #!/bin/bash
+#script to filter out bad phone numbers.
+
+gawk --re-interval '/^\(?[2-9][0-9]{2}\)?(| |-|\.)[0-9]{3}( |-|\.)[0-9]{4}/{print $0}'
+
+3、解析邮件地址：
+	isE-Mail.sh
+
+#!/bin/bash
+gawk --re-interval '/^([a-zA-Z0-9_\-\.\+]+)@([a-zA-Z0-9_\-\.]+)\.[a-zA-Z]{2,5}$/{print $0}
+
+
+
+
+
+
+
+
