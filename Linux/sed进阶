@@ -1,0 +1,166 @@
+
+
+一、多行命令
+
+	3个可用来处理多行文本的特殊命令：
+		N：将数据流中的下一行加进来创建一个多行组来处理。
+		D：删除多行组中的一行。
+		P：打印多行组中的一行。
+		
+	1、next命令
+		a) 单行的next命令：
+		eg:data1
+	 This is the header line.
+
+This is the data line.
+
+This is the last line
+
+sed '/header/{n;d}' data1				
+
+eg:s/System Administrator/Desktop User/
+   N
+   s/System\nAdministrator/Desktop\nUser			
+
+	2、多行删除命令：
+	3、多行打印命令：	
+
+二、保持空间
+	模式空间(pattern space)：是一块活动缓存区域，在sed编辑器执行命令时它会保存sed编辑器要检验的文本。
+	保持空间(hold space)：是另一块缓冲区区域，你可以在处理模式空间中其他行时用保持空间来临时保持一些行。
+	h：将模式空间复制到保持空间。
+	H：将模式空间附加到保持空间。
+	g：将保持空间复制到模式空间。
+	G：将保持空间附加到模式空间。
+	x：交换模式空间和附加空间的内容。
+
+	eg：sed -n '/first/{
+> h
+> p
+> n
+> p
+> g
+> p
+> }' data2
+This is the first line.
+This is the second line.
+This is the first line.
+
+三、排除命令：
+	!：感叹号命令用来排除(negate)命令，也就是让原本会起作用的命令不起作用。
+		eg：sed -n '/header/!p' data2
+		反转文本文件中的行：sed -n '{1!G;h;$p}' data2
+
+四、改变流：
+通常sed编辑器会从脚本的顶部开始执行命令并一直处理到脚本的结尾(D命令是个例外，它会强制sed编辑器返回到脚本的顶部，而不读取新的行)。
+
+	1、跳转
+		eg：sed '{/first/b jump1;s/This is the/No jump on/
+> :jump1
+> s/This is the/Jump here on/}' data2
+No jump on header line.
+Jump here on first line.
+No jump on second line.
+No jump on last line.
+
+	2、测试
+	eg：sed '{
+> s/first/matched/
+> t
+> s/This is the/No match on/
+> }' data2
+No match on header line.
+This is the matched line.
+No match on second line.
+No match on last line.
+
+五、模式替代：
+
+	1、and符号：用来代表替换命令中的匹配模式，不管匹配预定义模式的是什么文本，你都能用and符号来在替代模式中调用它。
+		eg： echo "The cat slleps in his hat" | sed 's/.at/"&"/g'
+The "cat" slleps in his "hat"
+
+	2、替换单独的单词：and符号会提取匹配替换命令中指定模式的整个字符串。sed编辑器用圆括号来定义替换模式的子字符串，然后你可以用替代模式中的特殊字符来引用每个子字符串。
+		eg：echo "That furry cat is prrety" | sed 's/furry \(.at\)/\1/'
+That cat is prrety
+		eg：echo "123456" | sed '{
+:start
+s/\(.*[0-9]\)\([0-9]\{3\}\)/\1.\2/
+t start
+}'
+123.456
+
+六、在脚本中使用sed
+
+	1、使用包装脚本：
+cat reverse.sh
+#!/bin/bash
+#shell wrapper for sed editor script to reverse lines.
+
+sed -n '{
+    1!G
+    h
+    $p
+}' $1
+
+	2、重定向sed的输出
+		eg：fact.sh
+#!/bin/bash
+#add commas to numbers in factorial answer.
+
+factorial=1
+count=1
+number=$1
+
+while [ $count -le $number ]
+do
+    factorial=$[ $factorial * $count ]
+    count=$[ $count + 1 ]
+done
+result=`echo $factorial | sed '{
+:start
+s/\(.*[0-9]\)\([0-9]\{3\}\)/\1.\2/
+t start
+}'`
+
+echo "The result is $result.
+
+七、创建sed实用工具：
+
+	1、加倍行间距：
+		eg： sed '$!G' data2
+This is the header line.
+
+This is the first line.
+
+This is the second line.
+
+This is the last line.
+
+	2、对可能含有空白行的文件加倍行间距：
+		eg：sed '/^$/d;$!G' data6
+This is line one.
+
+This is line two.
+
+This is line three.
+
+This is line four.
+
+	3、给文件中的行编号：
+		eg： sed '=' data2 | sed 'N;s/\n/ /'
+1 This is the header line.
+2 This is the first line.
+3 This is the second line.
+4 This is the last line.
+
+	4、打印末尾行：
+	5、删除行
+		a)删除连续的空白行：
+		b)删除开头的空白行
+		c)删除结尾的空白行
+	
+	6、删除HTML标签
+
+
+	
