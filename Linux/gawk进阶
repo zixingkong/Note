@@ -138,17 +138,219 @@ root
 data11
 
 
+四、结构化命令：
 
+	1、if语句
+		if (condition)
+			statement1
 
+			eg： # gawk '{
+> if ($1 > 20)
+> {
+> x=$1 * 2
+> print x
+> }
+> }' data4
+100
+68
 
+		eg： gawk '{
+if ($1 > 20)
+{
+x=$1 * 2
+print x
+}else
+{
+> x =$1 / 2
+> print x
+> }
+> }' data4
+5
+2.5
+6.5
+100
+68
+0
+	2、while语句
+	while (condition)
+	{
+		statements
+	}
 
+		eg：# gawk '{
+total = 0
+i = 1
+while (i < 4)
+{
+total += $i
+i += 1
+}
+avg=total/3
+print "Average : " avg
+}' data5
+Average : 128.333
+Average : 137.667
+Average : 176.667
 
+gawk编程语言支持在while循环中使用break 和 continue
+		eg：# gawk '{
+total = 0
+i = 1
+while (i < 4)
+{
+total += $i
+if (i == 2)
+{
+break
+}
+i++
+}
+avg = total / 2
+print "The average of the first two data elements is : " avg
+}' data5
+The average of the first two data elements is : 125
+The average of the first two data elements is : 136.5
+The average of the first two data elements is : 157.5
 
+	3、do while语句
+		do
+		{
+			statments
+		} while (condition)
 
+			eg:# gawk '{
+> total = 0
+> i = 1
+> do
+> {
+> total += $i
+> i++
+> } while (total < 150)
+> print total }' data5
+250
+160
+315
 
+	4、for语句：
+		for(variable assignment; condition； iteration process)
 
+				eg :  # gawk '{
+total = 0
+for(i=1;i<4;i++)
+{total += $i}
+avg = total / 3
+print "Average: " avg
+}' data5
+Average: 128.333
+Average: 137.667
+Average: 176.667
 
+五、格式化打印：
+	printf "format string" , var1 ,var2,...
+	格式化指定符采用如下格式：
+			%[modifier]control-letter
 
+		eg:  # gawk 'BEGIN{
+x = 10 * 100
+printf "The answer is %e\n", x
+}'
+The answer is 1.000000e+03
+		width: 指定了输出字段最小宽度的数字值。如果输出短于这个值，printf会向右对齐，并用空格来填充这段空间。如果输出比指定的宽度还要长，它就会覆盖width的值。
+		prec：指定了浮点数中小数点后面位数的数字值，或者文本字符串中显示的最大字符数。
+		-（减号）：减号指明在向格式化空间中放入数据时采用左对齐而不是右对齐。
+
+				eg： gawk 'BEGIN{FS="$";RS=""}{printf "%-16s %s \n",$1,$4}' data2
+Riley Mullen     (312)555-1234
+Frank Williams   (317)555-9876
+Haley Snell      (313)555-4938
+
+				eg：# gawk '{
+> total = 0
+> for(i=1;i<4;i++)
+> {total += $i}
+> avg = total / 3
+> printf "Average : %5.1f \n",avg
+> }' data5
+Average : 128.3
+Average : 137.7
+Average : 176.7
+
+六、内建函数：
+	数学、字符串和时间函数运算。
+	1、数学函数：
+		int():floor函数，返回0和该值之间最接近该值的整数。
+		rand()：产生0~1之间的随机数，如产生0~9的随机整数值，x=int(10 * rand())，只要为你的程序用上限值替换掉等式中的10就可以了。
+	2	、字符串函数：
+			eg： # gawk 'BEGIN{x="testing";print toupper(x);print length(x)}'
+TESTING
+7
+			eg： # gawk 'BEGIN{FS=","}{
+split($0,var)
+print var[1],var[5]
+}' data1
+data11 data15
+data21 data25
+data31 data35
+	
+	3、时间函数：通常用来处理日志文件，日志文件通常含有需要进行比较的日期。通过将日期的文本表示转换成epoch时间（自1990-01-01 00:00:00 UTC到现在的秒数），你可以轻松的比较日期。
+			eg： # gawk 'BEGIN{
+> date=systime()
+> day=strftime("%A,%B,%D,%y",date)
+> print day
+> }'
+Friday,June,06/22/18,18
+
+七、自定义函数：
+
+	1、定义函数：
+			function  name([variables])
+			{
+				statements
+			}
+			函数还能用return语句返回值。
+
+	2、使用自定义函数：
+			eg： # gawk '
+> function myprint()
+> {
+> printf "%-16s -%s\n",$1,$4
+> }
+> BEGIN{FS="\n";RS=""}
+> {
+> myprint()
+> }
+> ' data2
+Riley Mullen     -(312)555-1234
+Frank Williams   -(317)555-9876
+Haley Snell      -(313)555-4938
+
+	3、创建函数库：
+
+		要使用库，只要创建一个含有你的gawk程序的文件，然后在命令行上同时指定库文件和程序文件。
+# gawk -f script4 -f funclib data2
+Riley Mullen     -(312)555-1234
+Frank Williams   -(317)555-9876
+Haley Snell      -(313)555-4938
+其中：
+funclib:
+ function myprint()
+{
+    printf "%-16s -%s\n",$1,$4
+}
+function myrand(limit)
+{
+    return int(limit * rand())
+}
+function printthird()
+{
+    print $3
+}
+
+script4:
+BEGIN{FS="\n";RS=""}
+{
+    myprint()
+}
 
 
 
