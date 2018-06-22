@@ -1,0 +1,166 @@
+
+
+一、使用变量：
+	gawk编程语言支持两种不同类型的变量。
+		内建变量：
+		自定义变量：
+
+	1、内建变量：
+    a)字段和数据行分隔符变量：
+
+			FS：输入字段分隔符
+			OFS：输出字段分隔符
+			FIELDWIDTHS：由空格分隔开的定义了每个数据字段确切宽度的一列数字。
+			RS：输入数据行分隔符
+			ORS：输出数据行分隔符
+		
+			eg： gawk 'BEGIN{FS=",";OFS="<->"}{print $1,$2,$3}' data1
+data11<->data12<->data13
+data21<->data22<->data23
+data31<->data32<->data33
+
+			eg：gawk 'BEGIN{FIELDWIDTHS="3 5 2 5"}{print $1,$2,$3,$4}' data1b
+100 5.324 75 96.37
+115 -2.34 91 94.00
+058 10.12 98 100.1
+
+		eg： gawk 'BEGIN{FS="$";RS=""}{print $1,$4}' data2
+Riley Mullen (312)555-1234
+Frank Williams (317)555-9876
+Haley Snell (313)555-4938
+
+		b)数据变量：
+		
+			FNR：当前数据文件中的数据行数。
+			NF：数据文件中的字段总数。
+			NR：已处理的输入数据行数目。
+		
+				eg：
+ gawk 'BEGIN{FS=","}{print $1,"FNR="FNR,"NR="NR}' data1 data1
+data11 FNR=1 NR=1
+data21 FNR=2 NR=2
+data31 FNR=3 NR=3
+data11 FNR=1 NR=4
+data21 FNR=2 NR=5
+data31 FNR=3 NR=6
+
+	2、自定义变量：
+
+		a)在脚本中给变量赋值：
+			eg：gawk 'BEGIN{testing="This is test";print testing}'
+This is test
+
+		b)在命令行上给变量赋值：
+			eg： gawk -f script1 n=3 data1
+data13
+data23
+data33
+
+		注：-v命令可以指定在BEGIN代码部分之前设定的变量。
+		eg： gawk -v n=3 -f script1 data1
+3
+data13
+data23
+data33
+
+二、处理数组：
+	1、定义数组变量：
+		var[index]=element
+
+			eg：#awk 'BEGIN{
+> capital["willias"]="SpringField"
+> print capital["willias"]
+> }'
+SpringField
+# awk 'BEGIN{
+> var[1]=34
+> var[2]=2
+> total=var[1] + var[2]
+> print total
+> }'
+36
+
+	2、遍历数组变量：
+
+	使用for语句的特殊形式：
+		for (var in array)
+		{
+			statements
+		}
+
+			eg： # gawk 'BEGIN{
+var["a"]=1
+var["g"]=2
+var["m"]=3
+var["u"]=4
+for (test in var)
+{
+print "Index:" test "-Value:" var[test]
+> }
+> }'
+Index:u-Value:4
+Index:m-Value:3
+Index:a-Value:1
+Index:g-Value:2
+	
+	3、删除数组变量：
+    delete array[index]
+
+三、使用模式：
+
+	1、正则表达式：
+		eg：#gawk 'BEGIN{FS=","}/11/{print $1}' data1
+data11
+
+	2、匹配操作符：
+		匹配操作符(matching operator)允许将正则表达式限定在数据行中的特定数据字段。匹配操作符是波浪线(~)，你要一起指定匹配操作符、数据字段变量以及要匹配的正则表达式。
+
+			eg： # gawk 'BEGIN{FS=","}$2~/^data2/{print $0}' data1
+data21,data22,data23,data24,data25
+linux23221:/home/wangyayun/LinuxCommandLineAndShellScript/AdvancedGawk # gawk -F : '$1~/root/{print $1,$NF}' /etc/passwd
+root /bin/bash
+			不匹配的例子：
+gawk -F : '$1!~/root/{print $1,$NF}' /etc/passwd
+at /bin/bash
+bin /bin/bash
+daemon /bin/bash
+dhcpd /bin/false
+ftp /bin/bash
+ftpsecure /bin/false
+games /bin/bash
+
+	3、数学表达式：
+			
+			eg： # gawk -F : '$4==0{print $1}' /etc/passwd
+root
+
+				eg： # gawk -F , '$1=="data11"{print $1}' data1
+data11
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
