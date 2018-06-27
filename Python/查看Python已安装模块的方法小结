@@ -1,0 +1,37 @@
+查看python已安装模块的方法小结
+
+随着使用python的时间越来越长，安装的python模块也越来越多，时间久了都不记得自己之前到底对自己的电脑做过些什么了，于是乎就想要查看一下自己安装的python模块，现将查看方法总结如下
+
+一、命令行下使用pydoc命令
+
+在命令行下运行$ pydoc modules即可查看
+
+二、在python交互解释器中使用help()查看
+
+在交互式解释器中输入>>> help("modules")即可，效果跟在命令行下输入$ pydoc modules是一样的
+
+三、在python交互是解释器下导入sys模块查看
+
+python的sys模块也是可以用来查看模块信息的
+
+
+>>> import sys
+>>> sys.modules.keys()
+四、命令行下使用pip查看
+
+如果你使用的是pip来作为你的python包管理器的话，可以在命令行下直接运行$ pip freeze或者$ pip list来查看安装包的信息，当然其它的包管理器也有类似的功能，同时，你也可以在python交互式解释器中导入pip模块来查看包信息
+
+import pip
+installed_packages = pip.get_installed_distributions()
+installed_packages_list = sorted(["%s==%s" % (i.key, i.version)
+     for i in installed_packages])
+print(installed_packages_list)
+五、使用yolk来查看
+
+如果你安装过yolk的话可以使用yolk命令来查看包信息，你可以使用$ pip install yolk来安装它 
+yolk使用简单，只需在命令行下操作即可
+
+$ yolk -l    #列出所有安装模块
+$ yolk -a    #列出激活的模块
+$ yolk -n    #列出非激活模块
+$ yolk -U [packagename]  # 通过查询pypi来查看（该）模块是否有新版本
