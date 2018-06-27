@@ -1,6 +1,5 @@
 理解Python协程:从yield/send到yield from再到async/await
-2017年10月27日 10:16:20
-阅读数：2274
+
 Python中的协程大概经历了如下三个阶段： 
 1. 最初的生成器变形yield/send 
 2. 引入@asyncio.coroutine和yield from 
