@@ -1,0 +1,368 @@
+linux下文档的压缩和打包
+模范生关注0人评论625人阅读2015-03-28 10:20:34
+
+首先要弄清两个概念：打包和压缩。
+
+打包是指将一大堆文件或目录变成一个总的文件；
+
+压缩则是将一个大的文件通过一些压缩算法变成一个小文件。
+
+为什么要区分这两个概念呢？这源于Linux中很多压缩程序只能针对一个文件进行压缩，这样当你想要压缩一大堆文件时，你得先将这一大堆文件先打成一个包（tar命令），然后再用压缩程序进行压缩（gzip bzip2命令）。
+
+
+
+linux下最常用的打包程序就是tar了，使用tar程序打出来的包我们常称为tar包，tar包文件的命令通常都是以.tar结尾的。生成tar包后，就可以用其它的程序来进行压缩。
+
+
+
+1. gzip工具
+语法: gzip [-d#] filename 其中#为1-9的数字,默认压缩级别为6 
+只能压缩文件
+
+-f    强制覆盖压缩文件
+
+-1    快速压缩文件
+
+-9    最佳压缩文件
+
+-v    可视化压缩
+gzip  filename 生成filename.gz 源文件消失
+解压 gzip -d filename.gz 解压后，压缩文件也会消失
+
+zcat  用来查看gzip压缩的包
+
+
+
+最佳压缩和解压缩
+
+1
+2
+3
+4
+5
+6
+[root@localhost tmp]# gzip -9 a.img 
+[root@localhost tmp]# ls -lk
+-rw-------. 1 root  root 16507 Mar 26 13:00 a.img.gz
+[root@localhost tmp]# gzip -d a.img.gz 
+[root@localhost tmp]# ls -lk
+-rw-------. 1 root  root 16568 Mar 26 13:00 a.img
+可以同时压缩多个文件 gzip file1 file2 file3
+
+1
+2
+3
+4
+[root@localhost tmp]# gzip a.img dhcp-4.3.1.tar 
+[root@localhost tmp]# ls -l
+-rw-------. 1 root root 16902566 Mar 26 13:00 a.img.gz
+-rwxr-xr-x. 1 root root  8987298 Mar 26 12:58 dhcp-4.3.1.tar.gz
+可视化压缩
+
+1
+2
+[root@localhost tmp]# gzip -v dhcp-4.3.1.tar 
+dhcp-4.3.1.tar: 33.5% -- replaced with dhcp-4.3.1.tar.gz
+
+
+2. bzip2压缩工具
+语法： bzip2 [-dz] filename 
+压缩时，可以加 “-z” 也可以不加，都可以压缩文件
+
+bzip2 filename  生成filename.bz2 源文件消失
+不支持压缩目录
+
+-d    强制解压缩文件
+
+-z    强制压缩文件，默认可以不用加
+
+-k    压缩时保留原文件
+
+-f    解压缩时强制覆盖原文件
+
+-v    可视化压缩，显示节省空间百分比，压缩前后大小；
+
+bzip2 -d  filename.bz2 解压后压缩文件消失
+可以使用 bzcat 查看bz2的压缩后的文件内容
+
+
+
+可以同时压缩多个文件bzip2 file1 file2
+
+1
+2
+3
+4
+5
+[root@localhost tmp]# bzip2 a.img 
+[root@localhost tmp]# ls -l
+-rw-------. 1 root root 17025434 Mar 26 13:00 a.img.bz2
+[root@localhost tmp]# bzip2 -v dhcp-4.3.1.tar 
+  dhcp-4.3.1.tar:  1.538:1,  5.200 bits/byte, 35.00% saved, 13506560 in, 8779359 out.
+压缩时保留源文件，解压缩时强制覆盖源文件
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+[root@localhost tmp]# bzip2 -k a.img 
+[root@localhost tmp]# ls -lh
+-rw-------. 1 root root  17M Mar 26 13:00 a.img
+-rw-------. 1 root root  17M Mar 26 13:00 a.img.bz2
+[root@localhost tmp]# bzip2 -dfv a.img.bz2 
+  a.img.bz2: done
+[root@localhost tmp]# ls -lh
+drwxr-xr-x. 2 root root 4.0K Mar 27 13:38 abc
+-rw-------. 1 root root  17M Mar 26 13:00 a.img
+
+
+3. xz
+用法同gzip和bzip2
+xz  filename    生成filename.xz
+不支持压缩目录
+
+-v    可视化压缩，显示压缩所用的进度和时间；
+
+xz -d filename.xz  进行解压缩
+
+xcat    用来查看xz压缩的包的内容
+
+
+
+可以同时压缩多个目录，解压缩多个目录，并可视化显示；
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+[root@localhost tmp]# xz a.img dhcp-4.3.1.tar 
+[root@localhost tmp]# ls -lh
+-rw-------. 1 root root  17M Mar 26 13:00 a.img.xz
+-rwxr-xr-x. 1 root root 8.0M Mar 26 12:58 dhcp-4.3.1.tar.xz
+[root@localhost tmp]# xz -dv a.img.xz dhcp-4.3.1.tar.xz 
+a.img.xz (1/2)
+  100.0 %                 16.1 MiB / 16.2 MiB = 0.997                         
+dhcp-4.3.1.tar.xz (2/2)
+  100.0 %              8,146.0 KiB / 12.9 MiB = 0.618
+
+4. zip及unzip
+zip是压缩工具，unzip是解压缩工具，需要安装才可以使用。
+
+安装zip的命令： yum install -y zip
+
+安装unzip的命令： yum install -y unzip
+
+-v    可视化显示压缩过程，显示压缩前后文件大小和压缩百分比；
+
+-d    解压缩时用，指定解压缩到哪个目录下；
+
+不可以同时解压缩多个文件，解压缩不支持-v可视化；
+
+
+压缩文件: zip  filename.zip  filename
+压缩目录: zip -r  dir.zip dir/ 
+解压缩zip压缩包: unzip  filename.zip
+
+
+
+压缩abc目录为ab.zip,解压缩ab.zip并指定压缩到ab目录下，abc整个目录解压缩到ab目录下；
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+[root@localhost tmp]# zip -r ab.zip abc/
+  adding: abc/ (stored 0%)
+  adding: abc/passwd (deflated 58%)
+[root@localhost tmp]# unzip ab.zip -d ab
+Archive:  ab.zip
+   creating: ab/abc/
+  inflating: ab/abc/passwd           
+  inflating: ab/abc/a.img            
+[root@localhost tmp]# ls -lh
+drwxr-xr-x. 3 root root 4.0K Mar 27 15:30 ab
+drwxr-xr-x. 2 root root 4.0K Mar 27 15:27 abc
+-rw-r--r--. 1 root root  17M Mar 27 15:25 ab.zip
+[root@localhost tmp]# ls -l ab/
+drwxr-xr-x. 2 root root 4096 Mar 27 15:24 abc
+[root@localhost tmp]# ls -l ab/abc/
+-rw-------. 1 root root 16965117 Mar 27 15:24 a.img
+-rw-r--r--. 1 root root     1019 Mar 27 13:23 passwd
+可以使用file name.gz    name.zip    查询是哪一种压缩格式压缩的文件；
+
+5. tar打包工具
+
+可以打包目录也可以打包文件
+语法：tar [-zjxcvfpP] filename 
+打包: tar -cvf  test.tar  test 其中test是文件或目录 
+
+-c    表示建立包
+
+-v    可视化打包的过程
+
+-f    压缩时跟 “-f 文件名”，意思是压缩后的文件名为filename, 解压时跟 “-f 文件名”，意思是解压filename. 请注意，如果是多个参数组合的情况下带有 “-f”，请把 “-f” 写到最后面。 
+-z    打包的同时使用gzip压缩
+
+-j    打包的同时使用bzip2压缩
+
+-J    打包的同时使用xz压缩
+
+-C    指定解压后的目录
+
+tar -C /tmp/ -xvf 1.tar    解压到指定目录/tmp里面
+
+
+查看包内容: tar -tf  test.tar
+-t    查看tar包里面的文件 
+
+同样使用 tar -tf 查看压缩的包: tar -tf 1.tar.gz 或者tar -tf 1.tar.bz2
+
+
+解包: tar -xvf  test.tar 
+-x    解包或者解压缩 
+不管是打包还是解包，原来的文件是不会删除的，但它会覆盖当前已经存在的文件或者目录。
+
+打包abc目录为abc.tar，查看abc.tar的内容，解压abc.tar包；
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+[root@localhost tmp]# ls -l
+drwxr-xr-x. 2 root root     4096 Mar 27 15:27 abc
+-rw-------. 1 root root 16965117 Mar 26 13:00 a.img
+-rwxr-xr-x. 1 root root 13506560 Mar 26 12:58 dhcp-4.3.1.tar
+[root@localhost tmp]# tar -cvf abc.tar abc
+abc/
+abc/passwd
+abc/a.img
+[root@localhost tmp]# tar -tf abc.tar 
+abc/
+abc/passwd
+abc/a.img
+[root@localhost tmp]# tar -xvf abc.tar 
+abc/
+abc/passwd
+abc/a.img
+同时打包多个文件到11.tar
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+[root@localhost tmp]# tar -cvf 11.tar abc a.img dhcp-4.3.1.tar abc.tar 
+abc/
+abc/passwd
+abc/a.img
+a.img
+dhcp-4.3.1.tar
+abc.tar
+[root@localhost tmp]# ls -lh
+-rw-r--r--. 1 root root  62M Mar 27 16:33 11.tar
+
+打包的同时使用gzip压缩: tar -czvf  1.tar.gz 1 其中1可以是文件也可以是目录
+
+-z 表示打包同时使用gzip压缩
+解压.tar.gz的压缩包: tar -xzvf 1.tar.gz
+使用bzip2压缩: tar -cjvf 1.tar.bz2 1
+-j 表示打包同时使用bzip2压缩
+解压.tar.bz2: tar -xjvf 1.tar.bz2
+
+
+
+使用gzip压缩并打包，使用bzip2压缩并打包，对比2种压缩格式，bzip2压缩后的文件更小；使用xz压缩，压缩效果最佳！压缩后文件最小！
+
+源文件为13M，gzip压缩后为8.6M，bzip2压缩后为8.4M，xz压缩后为8.0M;
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+[root@localhost tmp]# ls -lh
+-rwxr-xr-x. 1 root root  13M Mar 26 12:58 dhcp-4.3.1.tar
+[root@localhost tmp]# tar -czvf gzip.tar.gz dhcp-4.3.1.tar dhcp-4.3.1.tar
+[root@localhost tmp]# tar -cjvf bzip2.tar.bz2 dhcp-4.3.1.tar dhcp-4.3.1.tar
+[root@localhost tmp]# ls -lh
+-rw-r--r--. 1 root root 8.4M Mar 27 16:54 bzip2.tar.bz2
+-rwxr-xr-x. 1 root root  13M Mar 26 12:58 dhcp-4.3.1.tar
+-rw-r--r--. 1 root root 8.6M Mar 27 16:54 gzip.tar.gz
+[root@localhost tmp]# xz dhcp-4.3.1.tar 
+[root@localhost tmp]# ls -lh
+-rw-r--r--. 1 root root 8.4M Mar 27 16:54 bzip2.tar.bz2
+-rwxr-xr-x. 1 root root 8.0M Mar 26 12:58 dhcp-4.3.1.tar.xz
+-rw-r--r--. 1 root root 8.6M Mar 27 16:54 gzip.tar.gz
+
+有时我们会看到一种后缀名为 .tar.xz的文件，这种压缩包是用xz工具压缩，
+
+打包压缩成 xz格式压缩包：tar -cJvf dir.tar.xz  dir/ 
+
+解压的方法为：tar -Jxvf  file.tar.xz
+
+
+
+可以在打包的时候，排除某些文件或者目录添加参数    --exclude
+tar --exclude 1.txt  -czvf 1.tar.gz  dir/
+
+排除多个文件或者目录: tar --exclude "目录名" --exclude "*文件名"  -czvf 1.tar.gz  dir/
+
+
+
+打包root目录到1.tar.gz 并排除目录里面的install开头的文件；
+
+1
+[root@localhost ~]# tar -czvf 1.tar.gz --exclude "install*" /root/
+
+
+
+
+©著作权归作者所有：来自51CTO博客作者模范生的原创作品，如需转载，请注明出处，否则将追究法律责任
+linux打包centos
