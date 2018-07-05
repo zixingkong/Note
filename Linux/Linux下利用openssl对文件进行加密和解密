@@ -1,0 +1,178 @@
+Linux下利用openssl对文件进行加密和解密
+2013年12月24日 10:44:16
+阅读数：16071
+转载地址：http://hi.baidu.com/edeed/item/99206a096b62d0e1ff240db8
+
+
+
+--建立文件test.txt, 特意写入中英文
+
+# cd /tmp
+# echo "test测试" > test.txt
+
+--开始加密, 使用aes-128-cbc算法, 也可以使用其他算法, 通过查看openssl的帮助可获知
+
+# openssl aes-128-cbc -salt -in test.txt -out test.txt.aes
+enter aes-128-cbc encryption password:<输入密码>
+Verifying - enter aes-128-cbc encryption password:<确认密码>
+
+--查看加密前后的文件大小, 加密后文件明显增大了
+
+# ll test.txt*  
+-rw-r--r--  1 root root  9 Aug 11 15:42 test.txt
+-rw-r--r--  1 root root 32 Aug 11 15:43 test.txt.aes
+
+--查看加密前后的文件内容, 加密后文件无法直接查看, 显示乱码
+
+# cat test.txt
+test测试
+
+# cat test.txt.aes
+Salted__碾RTqm6棚顱
+
+--现在开始解密, 会提示输入密码, 如果密码有误则无法解密
+
+# openssl aes-128-cbc -d -salt -in test.txt.aes -out test.txt.out
+enter aes-128-cbc decryption password:<输入错误密码>
+bad decrypt
+6150:error:06065064:digital envelope routines:EVP_DecryptFinal:bad decrypt:evp_enc.c:438:
+
+# openssl aes-128-cbc -d -salt -in test.txt.aes -out test.txt.out
+enter aes-128-cbc decryption password:<输入正确密码>
+
+--查看解密前后的文件大小, 和加密前是一样的
+
+# ll test.txt*
+-rw-r--r--  1 root root  9 Aug 11 15:42 test.txt
+-rw-r--r--  1 root root 32 Aug 11 15:43 test.txt.aes
+-rw-r--r--  1 root root  9 Aug 11 15:45 test.txt.out
+
+--查看解密前后的文件内容, 和加密前是一样的
+
+# cat test.txt.out
+test测试
+
+这种方法非常适合Linux下的文件内容保密, 呵呵....以上命令加参数比较复杂, 我们可以把命令加参数做个函数, 然后放到.bash_profile里, 这样每次登陆后直接使用函数即可, 如下:
+
+function encryption() 
+{ 
+ /usr/bin/openssl aes-128-cbc -salt -in $1 -out $1.aes && rm -f $1
+}
+function decryption() 
+{ 
+ /usr/bin/openssl aes-128-cbc -d -salt -in $1.aes -out $1 && rm -f $1.aes
+}
+
+然后就可以如下使用了(注意输入参数都是原文件名, 且会自动删除原文件):
+
+# encryption test.txt
+enter aes-128-cbc encryption password:
+Verifying - enter aes-128-cbc encryption password:
+
+# decryption test.txt
+enter aes-128-cbc decryption password:
+
+
+# ll test.txt*  
+-rw-r--r--  1 root root 9 Aug 11 15:46 test.txt
+-rw-r--r--  1 root root 9 Aug 11 15:45 test.txt.out
+
+--End--
+
+
+
+OpenSSL进行RSA加密解密：
+
+RSA是一个非对称加密算法。简单地说，非对称加密算法就是说加密解密一个文件需要两个密钥，一个用来加密，为公钥，一个用来解密，为私钥。证书可以用来授权公钥的使用。
+
+介绍下Linux平台下openssl工具的简单使用：
+
+1、生成一个密钥：
+
+openssl  genrsa  -out  test.key  1024
+
+这里-out指定生成文件。需要注意的是这个文件包含了公钥和私钥两部分，也就是说这个文件既可用来加密也可用来解密。后面的1024是生成密钥的长度。
+
+2、openssl可以将这个文件中的公钥提取出来：
+
+openssl  rsa  -in  test.key  -putout  -out  test_pub.key
+
+-in指定输入文件，-out指定提取生成公钥的文件名。至此，我们手上就有了一个公钥，一个私钥(包含公钥)。现在可以用公钥来加密文件了。
+
+3、在目录中创建一个hello的文本文件，然后利用此前生成的公钥加密文件：
+
+openssl  rsautl  -encrypt  -in  hello  -inkey  test_pub.key  -pubin  -out  hello.en
+
+-in指定要加密的文件，-inkey指定密钥，-pubin表明是用纯公钥文件加密，-out为加密后的文件。
+
+4、解密文件：
+
+
+openssl rsautl -decrypt -in hello.en -inkey test.key -out hello.de
+-in指定被加密的文件，-inkey指定私钥文件，-out为解密后的文件。
+
+
+
+OpenSSl命令行工具验证数字签名：
+
+一、发送方A：
+
+
+生成私钥：
+
+OpenSSL> genrsa -passout pass:123456 -out apri.pem 1024
+
+生成公钥：
+
+OpenSSL> rsa -passin pass:123456 -pubout -in apri.pem -out apub.pem
+
+用B的公钥加密数据：
+
+OpenSSL> rsautl -encrypt -pubin -inkey bpub.pem -in data.txt -out edata.txt
+
+计算数据的消息摘要：
+
+OpenSSL> dgst -sha1 -out md.txt data.txt
+
+用A的私钥给消息摘要签名：
+
+OpenSSL> rsautl -sign -inkey apri.pem -in md.txt -out signature.bin
+
+将edata.txt和signature.bin发送给接收方B
+
+二、接收方B
+
+
+生成私钥：
+
+OpenSSL> genrsa -passout pass:654321 -out bpri.pem 1024
+
+生成公钥：
+
+OpenSSL> rsa -passin pass:654321 -pubout -in bpri.pem -out bpub.pem
+
+ 
+
+用B的私钥解密数据：
+
+OpenSSL> rsautl -decrypt -inkey bpri.pem -in edata.txt -out data.txt
+
+计算data.txt的信息摘要：
+
+OpenSSL> dgst -sha1 -out ms2.txt data.txt
+
+用A的公钥解密数字签名：
+
+OpenSSL> rsautl -verify -pubin -inkey apub.pem -in signature.bin -out ms3.txt
+
+最后比较：ms2.txt 和ms3.txt内容完全相同：
+
+SHA1(data.txt)= ad6910d33d5f96cbd7b9b3378107b8b04ba1c138
+
+
+阅读更多
+个人分类： 密码学
+想对作者说点什么？ 我来说一句
+ 
+OpenSSL命令详解（一）——标准命令
+ref: http://www.cnblogs.com/LittleHann/p/3738141.htmlOpenSSL自建CA和签发证书，参见： http://blog.csdn.net/scu...
