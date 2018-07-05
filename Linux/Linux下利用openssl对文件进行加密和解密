@@ -176,3 +176,106 @@ SHA1(data.txt)= ad6910d33d5f96cbd7b9b3378107b8b04ba1c138
  
 OpenSSL命令详解（一）——标准命令
 ref: http://www.cnblogs.com/LittleHann/p/3738141.htmlOpenSSL自建CA和签发证书，参见： http://blog.csdn.net/scu...
+
+后续补充：
+linux下使用openssl和md5sum加密文件或者字符串
+2017年08月31日 18:32:36
+阅读数：1768
+一、 用oppnssl md5 加密字符串和文件的方法。
+　　1. oppnssl md5 加密字符串的方法
+　　a.手动输入命令及过程如下：
+　　#openssl //在终端中输入openssl后回车。
+　　OpenSSL> md5 //输入md5后回车
+　　123456 //接着输入123456，不要输入回车。然后按3次ctrl+d。
+　　123456e10adc3949ba59abbe56e057f20f883e //123456后面的就是密文了
+ 解释：为何在输入123456后不回车呢？
+是因为openssl默认会把回车符当做要加密的字符串中的一个字符，所以得到的结果不同。如果你输入123456后回车，在按2次ctrl+d。得到的结果是：
+OpenSSL> md5
+123456
+f447b20a7fcbf53a5d5be013ea0b15af //因为openssl不忽略回车符导致的
+　 　 b.或者直接用管道命令
+　　# echo -n 123456 | openssl md5 //必须要有-n参数，否则就不是这个结果了。
+　　e10adc3949ba59abbe56e057f20f883e
+ 解释：为何要加-n这个参数？
+-n就表示不输入回车符，这样才能得到正确的结果。如果你不加-n，那么结果和前面说的一样为：
+f447b20a7fcbf53a5d5be013ea0b15af //因为openssl不忽略回车符导致的
+
+
+  2.用openssl加密文件。该方式没有测试通过 所有的文件加密操作军灭有通过,不知道原因
+　　 #openssl md 5 -in 1.txt
+自己测试使用命令 openssl md5 -out test.txt.md5 test.txt 将对test.txt的加密结果重定向到test.txt.md5文件中
+
+
+一. 利用openssl命令进行BASE64编码解码（base64 encode/decode）
+　　1. BASE64编码命令
+　　对字符串‘abc’进行base64编码：
+　　# echo abc | openssl base64
+　　YWJjCg== （编码结果）
+　如果对一个文件进行base64编码（文件名t.txt）：
+　　# openssl base64 -in t.txt
+　　2. BASE64解码命令
+　　求base64后的字符串‘YWJjCg==’的原文：
+　　# echo YWJjCg== | openssl base64 -d
+　　abc （解码结果）
+　如果对一个文件进行base64解码（文件名t.base64）：
+　　# openssl base64 -d -in t.base64
+二. 利用openssl命令进行md5/sha1摘要（digest）
+　　1. 对字符串‘abc’进行md5摘要计算：echo abc | openssl md5
+　　 若对某文件进行md5摘要计算：openssl md5 -in t.txt
+　　2. 对字符串‘abc’进行sha1摘要计算：echo abc | openssl sha1
+　　 若对某文件进行sha1摘要计算：openssl sha1 -in t.txt
+三. 利用openssl命令进行AES/DES3加密解密（AES/DES3 encrypt/decrypt）
+　　对字符串‘abc’进行aes加密，使用密钥123，输出结果以base64编码格式给出：
+　　# echo abc | openssl aes-128-cbc -k 123 -base64
+　　U2FsdGVkX18ynIbzARm15nG/JA2dhN4mtiotwD7jt4g= （结果）
+　　对以上结果进行解密处理：
+　　# echo U2FsdGVkX18ynIbzARm15nG/JA2dhN4mtiotwD7jt4g= | openssl aes-128-cbc -d -k 123 -base64
+　　abc （结果）
+　　若要从文件里取原文（密文）进行加密（解密），只要指定 -in 参数指向文件名就可以了。
+　　进行des3加解密，只要把命令中的aes-128-cbc换成des3就可以了。
+　　注：只要利用openssl help就可以看到更多的安全算法了。
+
+
+
+
+三、 利用md5sum命令
+　　A.在linux或Unix上，md5sum是用来计算和校验文件报文摘要的工具程序。一般来说，安装了Linux后，就会有md5sum这个工具，直接在命令行终端直接运行。可以用下面的命令来获取md5sum命令帮助 man md5sum
+　　#md5sum –help
+　　有个提示：“With no FILE, or when FILE is -, read standard input.”翻译过来就是“如果没有输入文件选项或者文件选项为 - ，则从标砖读取输入内容”，即可以直接从键盘读取字符串来加密。
+　　利用md5sum加密字符串的方法
+　　 # md5sum //然后回车
+　　 123456 //输入123456.然后按两次ctrl+d.
+　　显示：
+　　 123456e10adc3949ba59abbe56e057f20f883e 红色代表加密后的值
+　　还可以用管道命令：
+　　 #echo -n '123123' | md5sum
+　　
+　　或者写成md5加密脚本，名字叫md5.sh，
+　　将以下内容复制进脚本里：
+　　 #!/bin/bash
+　　 echo -n $1 | md5sum | awk '{print $1}'
+　　
+　　保存后，给脚本执行权限。
+　　 #sh md5.sh 123456
+　　 显示：e10adc3949ba59abbe56e057f20f883e
+　　B.其实也可以将文本放入文本文件，然后用md5sum 加密改文本，也可以得到字符串加密的值。过程如下：
+　　 #touch a.txt
+　　 #echo -n 123456 > a.txt //将123456写进文本文件，不能丢了 –n参数，避免回车符干扰
+　　 #md5sum a.txt
+　　 显示：e10adc3949ba59abbe56e057f20f883e a.txt
+　　
+　　ctrl+d有两个含义：
+　　一是向程序发送文件输入结束符EOF。
+　　二是向程序发送exit退出指令。程序收到信号后具体动作是结束输入、然后等待，还是直接退出，那就要看该程序捕获信号后是如何操作的了。
+　　  md5sum属于第一个含义。两次strl+d了，第一次读取EOF指令，再次捕获就会当成exit指令。而shell一类的程序，会直接把ctrl+d解析为退出指令。
+
+
+四、 使用MD5sum该命令判断文件是否被修改了
+md5sum testmd51.txt >testmd51.txt.md5 将testmd51.txt的md5结果重定向到文件testmd51.txt.md5中
+使用md5sum testmd51.txt -c testmd51.txt.md5 校验其文件内容是否被修改了
+显示结果 如下  就是说明一致没有被修改
+md5sum: testmd51.txt：找不到格式适用的MD5 校验和
+testmd51.txt: 确定
+显示结果如下  就说明不一致被修改了
+testmd51.txt: 失败
+md5sum: 警告：1 个校验和不匹配
