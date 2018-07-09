@@ -1,0 +1,157 @@
+原文地址：https://www.ibm.com/developerworks/cn/linux/l-cn-hardandsymb-links/index.html
+
+1. Linux 系统的顶层目录结构
+/              根目录
+├── bin     存放用户二进制文件
+├── boot    存放内核引导配置文件
+├── dev     存放设备文件
+├── etc     存放系统配置文件
+├── home    用户主目录
+├── lib     动态共享库
+├── lost+found  文件系统恢复时的恢复文件
+├── media   可卸载存储介质挂载点
+├── mnt     文件系统临时挂载点
+├── opt     附加的应用程序包
+├── proc    系统内存的映射目录，提供内核与进程信息
+├── root    root 用户主目录
+├── sbin    存放系统二进制文件
+├── srv     存放服务相关数据
+├── sys     sys 虚拟文件系统挂载点
+├── tmp     存放临时文件
+├── usr     存放用户应用程序
+└── var     存放邮件、系统日志等变化文件
+
+2、硬链接与软连接：
+
+在 Linux 系统中查看 inode 号可使用命令 stat 或 ls -i（若是 AIX 系统，则使用命令 istat）。清单 3.中使用命令 mv 移动并重命名文件 glibc-2.16.0.tar.xz，其结果不影响文件的用户数据及 inode 号，文件移动前后 inode 号均为：2485677。
+
+为解决文件的共享使用，Linux 系统引入了两种链接：硬链接 (hard link) 与软链接（又称符号链接，即 soft link 或 symbolic link）。链接为 Linux 系统解决了文件的共享使用，还带来了隐藏文件路径、增加权限安全及节省存储等好处。若一个 inode 号对应多个文件名，则称这些文件为硬链接。换言之，硬链接就是同一个文件使用了多个别名（见 图 2.hard link 就是 file 的一个别名，他们有共同的 inode）。硬链接可由命令 link 或 ln 创建。如下是对文件 oldfile 创建硬链接。
+
+link oldfile newfile 
+ln oldfile newfile
+由于硬链接是有着相同 inode 号仅文件名不同的文件，因此硬链接存在以下几点特性：
+
+文件有相同的 inode 及 data block；
+只能对已存在的文件进行创建；
+不能交叉文件系统进行硬链接的创建；
+不能对目录进行创建，只可对文件创建；
+删除一个硬链接文件并不影响其他有相同 inode 号的文件。
+清单 4. 硬链接特性展示
+
+ 
+// 只能对已存在的文件创建硬连接
+# link old.file hard.link 
+link: cannot create link `hard.link' to `old.file': No such file or directory 
+ 
+# echo "This is an original file" > old.file 
+# cat old.file 
+This is an original file 
+# stat old.file 
+ File: `old.file'
+ Size: 25           Blocks: 8          IO Block: 4096   regular file 
+Device: 807h/2055d      Inode: 660650      Links: 2 
+Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root) 
+... 
+// 文件有相同的 inode 号以及 data block 
+# link old.file hard.link | ls -li 
+total 8 
+660650 -rw-r--r-- 2 root root 25 Sep  1 17:44 hard.link 
+660650 -rw-r--r-- 2 root root 25 Sep  1 17:44 old.file 
+ 
+// 不能交叉文件系统
+# ln /dev/input/event5 /root/bfile.txt 
+ln: failed to create hard link `/root/bfile.txt' => `/dev/input/event5': 
+Invalid cross-device link 
+ 
+// 不能对目录进行创建硬连接
+# mkdir -p old.dir/test 
+# ln old.dir/ hardlink.dir 
+ln: `old.dir/': hard link not allowed for directory 
+# ls -iF 
+660650 hard.link  657948 old.dir/  660650 old.file
+文件 old.file 与 hard.link 有着相同的 inode 号：660650 及文件权限，inode 是随着文件的存在而存在，因此只有当文件存在时才可创建硬链接，即当 inode 存在且链接计数器（link count）不为 0 时。inode 号仅在各文件系统下是唯一的，当 Linux 挂载多个文件系统后将出现 inode 号重复的现象（如 清单 5.所示，文件 t3.jpg、sync 及 123.txt 并无关联，却有着相同的 inode 号），因此硬链接创建时不可跨文件系统。设备文件目录 /dev 使用的文件系统是 devtmpfs，而 /root（与根目录 / 一致）使用的是磁盘文件系统 ext4。清单 5.展示了使用命令 df 查看当前系统中挂载的文件系统类型、各文件系统 inode 使用情况及文件系统挂载点。
+
+清单 5. 查找有相同 inode 号的文件
+
+# df -i --print-type 
+Filesystem     Type       Inodes  IUsed    IFree IUse% Mounted on 
+/dev/sda7      ext4      3147760 283483  2864277   10% / 
+udev           devtmpfs   496088    553   495535    1% /dev 
+tmpfs          tmpfs      499006    491   498515    1% /run 
+none           tmpfs      499006      3   499003    1% /run/lock 
+none           tmpfs      499006     15   498991    1% /run/shm 
+/dev/sda6      fuseblk  74383900   4786 74379114    1% /media/DiskE 
+/dev/sda8      fuseblk  29524592  19939 29504653    1% /media/DiskF 
+ 
+# find / -inum 1114 
+/media/DiskE/Pictures/t3.jpg 
+/media/DiskF/123.txt 
+/bin/sync
+值得一提的是，Linux 系统存在 inode 号被用完但磁盘空间还有剩余的情况。我们创建一个 5M 大小的 ext4 类型的 mo.img 文件，并将其挂载至目录 /mnt。然后我们使用一个 shell 脚本将挂载在 /mnt 下 ext4 文件系统的 indoe 耗尽（见清单 6.）。
+
+清单 6. 测试文件系统 inode 耗尽但仍有磁盘空间的情景
+
+# dd if=/dev/zero of=mo.img bs=5120k count=1 
+# ls -lh mo.img 
+-rw-r--r-- 1 root root 5.0M Sep  1 17:54 mo.img 
+# mkfs -t ext4  -F ./mo.img 
+... 
+OS type: Linux 
+Block size=1024 (log=0) 
+Fragment size=1024 (log=0) 
+Stride=0 blocks, Stripe width=0 blocks 
+1280 inodes, 5120 blocks 
+256 blocks (5.00%) reserved for the super user 
+... 
+... 
+Writing superblocks and filesystem accounting information: done 
+ 
+# mount -o loop ./mo.img /mnt 
+# cat /mnt/inode_test.sh 
+#!/bin/bash 
+ 
+for ((i = 1; ; i++)) 
+do 
+   if [ $? -eq 0 ]; then 
+       echo  "This is file_$i" > file_$i 
+   else 
+       exit 0 
+   fi 
+done 
+ 
+# ./inode_test.sh 
+./inode_test.sh: line 6: file_1269: No space left on device 
+ 
+# df -iT /mnt/; du -sh /mnt/ 
+Filesystem     Type Inodes IUsed IFree IUse% Mounted on 
+/dev/loop0     ext4   1280  1280     0  100% /mnt 
+1.3M    /mnt/
+硬链接不能对目录创建是受限于文件系统的设计（见 清单 4.对目录创建硬链接将失败）。现 Linux 文件系统中的目录均隐藏了两个个特殊的目录：
+当前目录（.）与父目录（..）。查看这两个特殊目录的 inode 号可知其实这两目录就是两个硬链接（注意目录 /mnt/lost+found/ 的 inode 号）。
+若系统允许对目录创建硬链接，则会产生目录环。
+
+# ls -aliF /mnt/lost+found 
+total 44 
+11 drwx------ 2 root root 12288 Sep  1 17:54 ./ 
+2 drwxr-xr-x 3 root root 31744 Sep  1 17:57 ../ 
+ 
+# stat  /mnt/lost+found/ 
+ File: `/mnt/lost+found/'
+ Size: 12288        Blocks: 24         IO Block: 1024   directory 
+Device: 700h/1792d      Inode: 11          Links: 2 
+Access: (0700/drwx------)  Uid: (    0/    root)   Gid: (    0/    root) 
+Access: 2012-09-01 17:57:17.000000000 +0800 
+Modify: 2012-09-01 17:54:49.000000000 +0800 
+Change: 2012-09-01 17:54:49.000000000 +0800 
+Birth: -
+软链接与硬链接不同，若文件用户数据块中存放的内容是另一文件的路径名的指向，则该文件就是软连接。软链接就是一个普通文件，只是数据块内容有点特殊。
+软链接有着自己的 inode 号以及用户数据块（见 图 2.）。因此软链接的创建与使用没有类似硬链接的诸多限制：
+
+软链接有自己的文件属性及权限等；
+可对不存在的文件或目录创建软链接；
+软链接可交叉文件系统；
+软链接可对文件或目录创建；
+创建软链接时，链接计数 i_nlink 不会增加；
+删除软链接并不影响被指向的文件，但若被指向的原文件被删除，则相关软连接被称为死链接（即 dangling link，若被指向路径文件被重新创建，
+死链接可恢复为正常的软链接）。
+图 2. 软链接的访问
