@@ -1,0 +1,30 @@
+在linux中，我们经常需要通过man命令来查询某个API或者命令的用法及含义，不知道大家有没有注意到当你要查的命令/API有多个man pages对应时，比如下图：
+
+linux-jzzp:~ # man mkdir
+Man: find all matching manual pages (set MAN_POSIXLY_CORRECT to avoid this)
+ * mkdir (1)
+   mkdir (2)
+   mkdir (1p)
+   mkdir (3p)
+Man: What manual page do you want?
+那么mkdir后面的编号是什么意思呢？
+答案就是类别编号。因为linux中有一些名字既可以是cmd又是API，而相应的manpage又不一样，为了区分不同的manpage，linux系统中所有涉及manpage的内容分为几类，每一类对应一个编号（如上面mkdir后面的数字）。
+
+主要的类别和对应的编号有：
+
+0     Header files
+0p    Header files (POSIX)
+1     Executable programs or shell commands
+1p    Executable programs or shell commands (POSIX)
+2     System calls (functions provided by the kernel)
+3     Library calls (functions within program libraries)
+3n    Network Functions
+3p    Perl Modules
+4     Special files (usually found in /dev)
+5     File formats and conventions eg /etc/passwd
+6     Games
+7     Miscellaneous  (including  macro  packages and conventions), e.g. man(7), groff(7)
+8     System administration commands (usually only for root)
+9     Kernel routines
+l     Local documentation
+n     New manpages
