@@ -1,0 +1,29 @@
+1、ERROR 1396 (HY000): Operation CREATE USER failed for 'XXXX'@'XXXX'
+	创建用户失败
+	数据库创建用户名密码，然后刷新
+	create user ossdbuser identified by 'Changeme_123';
+	flush privileges; 
+	
+2、ERROR 1045/1044 (28000): Access denied for user 'ossdbuser'@'localhost' (using passwor yes）
+	赋予任何主机访问数据库的权限，且ossdbuser拥有对数据的全部权限
+	grant all privileges on *.* to 'ossdbuser '@'%';
+
+3、“ERROR 1418 (HY000): This function has none of DETERMINISTIC, NO SQL, or READS SQL DATA in its declaration and binary logging is enabled (you *might* want to use the less safe 
+	设置可以控制可以信任存储函数创建者
+	set global log_bin_trust_function_creators=1;
+	L
+4、数据库不存在，创建数据库
+	CREATE DATABASE ies DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;
+
+
+总的要执行：
+CREATE DATABASE ies DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;
+set global log_bin_trust_function_creators=1;
+grant all privileges on *.* to 'mateinfo_db_user'@'%';
+create user ossdbuser identified by 'Changeme_123';
+grant all privileges on *.* to 'ossdbuser '@'%';
+
+GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'mateinfo_db_user'@'%';
+grant all on ies.* to ‘mateinfo_db_user’@’%’;
+
+grant all on mateinfo.* to ‘mateinfo_db_user’@’%’;
