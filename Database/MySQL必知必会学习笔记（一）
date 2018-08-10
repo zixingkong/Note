@@ -48,6 +48,14 @@
 		计算次序：select prod_name, prod_price from products where (vend_id = 1002 or vend_id = 1003) and prod_price >= 10;
 	in操作符：select prod_name,prod_price from products where vend_id in (1002,1003) order by prod_name;
 	not操作符：select prod_name,prod_price from products where vend_id not in (1002,1003) order by prod_name;	
+八、用通配符进行过滤
+	like操作符：
+		百分号(%)通配符：select prod_id, prod_name from products where prod_name like 'jet%';(%匹配任何字符任何次数)
+					select prod_id, prod_name from products where prod_name like '%anvil%';
+					select prod_name from products where prod_name like 's%e';
+		下划线(_)通配符：select prod_id, prod_name from products where prod_name like '_ ton anvil';
+					select prod_id, prod_name from products where prod_name like '% ton anvil';
+
 
 
 
