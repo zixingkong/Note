@@ -1,0 +1,68 @@
+						《MySQL必知必会》读书笔记
+
+一、了解MySQL
+		什么是数据库
+		表
+		列和数据类型
+		行
+		主键
+二、MySQL简介
+三、使用MySQL
+	连接：mysql 	-u username  -p password  -h hostname  -P port；
+	选择数据库：use database；
+	了解数据库和表：
+			show databases;
+			show tables;
+			show columns from table_name;(显示表列)
+			show status；(显示服务器状态信息)
+			show create datbase 或者 show create table;(显示创建特定数据库或表)
+			show grants;(显示授予用户的安全权限)
+			show errors 和show warnings;(显示服务器错误和警告信息)
+四、检索数据
+	select语句
+	检索单个列：select prod_name from products;
+	检索多个列：select prod_id,prod_name,prod_price from products;
+	检索所有列：select * from products;
+	检索不同的行：select distinct vend_id from products;
+	限制结果：select prod_name from products limit 5;
+			select prod_name from products limit 5,5;
+	使用完全限定的表名：select products.prod_name from products;
+五、排序数据
+	排序数据：select prod_name from products order by prod_name;
+	按多个列排序：select prod_id, prod_price, prod_name from products order by prod_price,prod_name;
+	指定排序方向：select prod_id,prod_price, prod_name from products order by prod_price desc desc;
+			select prod_id, prod_price, prod_name from products order by prod_price desc,prod_name;
+	获取一个列中最大或者最小的值：select prod_price from products order by prod_price desc limit 1;
+六、过滤数据
+	使用where语句：select prod_name,prod_price from products where prod_price = 2.50;
+	where子句操作符：
+		检查单个值：select prod_name,prod_price from products where prod_name = 'fuses';
+				select prod_name, prod_price from 	products where prod_price <= 10;
+		不匹配检查：select vend_id, prod_name from products where vend_id <> 1003;
+		范围值检查：select prod_id, prod_price from products where prod_price between 5 and 10;
+		空值检查：select prod_name from products where prod_price is null;
+七、数据过滤
+	组合where子句：
+		and操作符：select prod_id,prod_price,prod_name from products where vend_id = 1003 and prod_price <= 10;
+		or操作符：select prod_name,prod_price from products where vrnd_id = 1002 or vend_id = 1003;
+		计算次序：select prod_name, prod_price from products where (vend_id = 1002 or vend_id = 1003) and prod_price >= 10;
+	in操作符：select prod_name,prod_price from products where vend_id in (1002,1003) order by prod_name;
+	not操作符：select prod_name,prod_price from products where vend_id not in (1002,1003) order by prod_name;	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
