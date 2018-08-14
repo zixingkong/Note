@@ -1,0 +1,98 @@
+							《MySQL必知必会》笔记（三）
+一、分组数据
+	数据分组：分组允许把数据分为多个逻辑组，以便能对每个组进行聚集运算。
+	创建分组：select count(*) as num_prods from products where vend_id = 1003;
+		select vend_id,count(*) as num_prods from products  group by vend_id;
+		select vend_id,count(*) as num_prods from products group by vend_id with rollup;
+	过滤分组：select cust_id,count(*) as orders from orders group by cust_id having count(*) >= 2;
+		select vend_id ,count(*) as num_prods from products where prod_price >= 10 group by vend_id having count(*) >= 2;
+		select  vend_id ,count(*) as num_prods from products group by vend_id having count(*) >= 2;
+	分组和排序：select order_num, sum(quantity * item_price) as ordertotal from orderitems group by order_num having sum(quantity * item_price) >= 50;
+		select order_num, sum(quantity * item_price) as ordertotal from orderitems group by order_num having sum(quantity * item_price) >= 50
+			order by ordertotal;
+二、使用子查询
+	子查询：query，任何SQL豫剧都是查询，但此术语一般是指select语句；子查询(subquery),即嵌套在其他查询中的查询。
+	利用子查询进行过滤：
+		select cust_name, cust_contact
+		from customers 
+		where cust_id in(select cust_id
+				   from orders	
+				   where order_num in (select order_num
+							   from orderitems
+							   where prod_id = 'TNT2'));
+	作为计算字段使用子查询：
+		
+		select  cust_name,
+			 cust_state,
+			 (select count(*)
+			  from orders
+			  where orders.cust_id = customers.cust_id) as orders
+		from customers 
+		order by cust_name;
+
+三、联结表
+	联结
+		关系表：关系数据库的设计基础是竭力避免相同数据出现多次。关系表的设计就是要保证把信息分解成多个表，一类数据一个表。各表通过某些常用的值(即关系设计中的关系(relational))互相关联。
+		外键(foreign key)：外键为某个表中的一列，它包含另一个表的主键值，定义了两个表之间的关系。
+		可伸缩性(scale)：能够适应不断增加的工作量而不失败。设计良好的数据库或应用程序称之为可伸缩性好(scale well)。
+		为什么要使用联结，联结是一种机制，用来在一条select语句中关联表，因此称之为联结。维护引用完整性。
+	创建联结：select vend_name,prod_name,prod_price from vendors ,products where vendors.vend_id = products.vend_id order by vend_name ,prod_name；
+		笛卡尔积：select vend_name,prod_name,prod_price from vendors,products order by vend_name,prod_name；
+	内部联结（也称为等值联结）：select vend_name,prod_name,prod_price from vendors inner join products on vendors.vend_id = products.vend_id;
+	联结多个表：select prod_name ,vend_name,prod_price,quantity from orderitems ,products ,vendors where products.vend_id = vendors.vend_id 
+		and orderitems.prod_id = products.prod_id
+		and order_num = 20005;
+		下面两条语句等价：select cust_name,cust_contact from customers where cust_id in (select cust_id from orders where order_num in (select order_num from 
+			orderitems where prod_id = 'TNT2') )；
+
+			select cust_name ,cust_contact from customers,orders ,orderitems where customers.cust_id = orders.cust_id 
+			and orderitems.order_num = orders.order_num
+			and prod_id = 'TNT2';
+四、创建高级联结
+	使用表别名：缩短SQL语句，允许在单条select语句中多次使用相同的表。
+		select cust_name,cust_contact from customers as c,orders as o,orderitems as oi where c.cust_id = o.cust_id 
+		and oi.order_num = o.order_num
+		and prod_id = 'TNT2';
+	使用不同类型的联结
+		自联结：select prod_id ,prod_name from products where vend_id = (select vend_id from products where prod_id = 'DTNTR');
+			select p1.prod_id,p1.prod_name from products as p1, products as p2 where p1.vend_id = p2.vend_id and p2.prod_id = 'DTNTR';
+		自然联结：排除多次出现，使每个列只返回一次。
+			select c.* ,o.order_num,o.order_date ,oi.prod_id,oi.quantity,oi.item_price from customers as c,orders as o,orderitems as oi
+				where c.cust_id = o.cust_id
+				and oi.order_num = o.order_num
+				and prod_id = 'FB';
+		外部联结：联结包含了那些在相关表中没有关联行的行。
+			select customers.cust_id,orders.order_num from customers inner join orders on customers.cust_id = orders.cust_id;
+			select customers.cust_id,orders.order_num from customers left outer join orders on customers.cust_id = orders.cust_id;
+			select customers.cust_id,orders.order_num from customers right outer join orders on customers.cust_id = orders.cust_id;
+	使用带聚集函数的联结：select customers.cust_name ,customers.cust_id, count(orders.order_num) as num_ord
+				from customers inner join orders 
+				on customers.cust_id = orders.cust_id
+				group by customers.cust_id;
+
+				select customers.cust_name,customers.cust_id,count(orders.order_num) as num_ord
+				from customers left outer join orders 
+				on customers.cust_id = orders.cust_id
+				group by customers.cust_id;
+使用联结和联结条件：
+
+五、组合查询
+	组合查询：MySQL允许执行多个查询(多条select语句)，并将结果作为单个查询结果返回。这些组合查询通常称为(union)或复合查询(compound query)。
+	创建组合查询：
+		使用union：select vend_id, prod_id, prod_price from products where prod_price <= 5
+			    union 
+			    select vend_id, prod_id, prod_price from products where vend_id in (1001,1002);
+		union规则
+		包含或取消重复的行：
+				select vend_id, prod_id, prod_price from products where prod_price <= 5
+				union all
+				select vend_id, prod_id, prod_price from products where vend_id in (1001,1002);
+		对组合查询结果排序：
+				select vend_id, prod_id, prod_price from products where prod_price <= 5
+				union all
+				select vend_id, prod_id, prod_price from products where vend_id in (1001,1002)
+				order by vend_id, prod_price;
+
+
+
+
