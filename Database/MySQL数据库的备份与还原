@@ -1,0 +1,102 @@
+mysql数据库备份和还原常用的命令
+2011年01月05日 17:06:00
+阅读数：5602
+
+备份MySQL数据库的命令
+mysqldump   -hhostname   -uusername   -ppassword  databasename > backupfile.sql
+
+备份MySQL数据库为带删除表的格式 
+备份MySQL数据库为带删除表的格式，能够让该备份覆盖已有数据库而不需要手动删除原有数据库。
+mysqldump  -–add-drop-table   -uusername   -ppassword   databasename > backupfile.sql
+
+
+直接将MySQL数据库压缩备份
+mysqldump   -hhostname   -uusername   -ppassword   databasename | gzip > backupfile.sql.gz
+
+
+备份MySQL数据库某个(些)表
+mysqldump   -hhostname   -uusername    -ppassword   databasename   specific_table1   specific_table2 > backupfile.sql
+
+
+同时备份多个MySQL数据库
+mysqldump   -hhostname   -uusername   -ppassword   –-databases   databasename1 databasename2 databasename3 > multibackupfile.sql
+
+
+仅仅备份数据库结构
+mysqldump   –-no-data   –-databases   databasename1   databasename2   databasename3 > structurebackupfile.sql
+ mysqldump   -hlocalhost   -p   -uroot   --no-data   --databases mysql mysql_test > structurebackupfile-1.sql
+
+
+备份服务器上所有数据库
+mysqldump –-all-databases > allbackupfile.sql
+
+
+还原MySQL数据库的命令
+mysql -hhostname -uusername -ppassword databasename < backupfile.sql
+
+
+还原压缩的MySQL数据库
+
+gunzip < backupfile.sql.gz | mysql -uusername -ppassword databasename
+
+centos 下mysqldump备份多个数据库命令
+2017年05月10日 11:42:55
+阅读数：3559
+mysqldump -u root -p --databases 数据库1 数据库2 > xxx.sql
+
+还原：系统命令行： MySQL -uroot -p123456 <f:\all.sql
+
+常见选项：
+--all-databases, -A： 备份所有数据库
+--databases, -B： 用于备份多个数据库，如果没有该选项，mysqldump把第一个名字参数作为数据库名，后面的作为表名。使用该选项，mysqldum把每个名字都当作为数据库名。
+--force, -f：即使发现sql错误，仍然继续备份
+--host=host_name, -h host_name：备份主机名，默认为localhost
+--no-data, -d：只导出表结构
+--password[=password], -p[password]：密码
+--port=port_num, -P port_num：制定TCP/IP连接时的端口号
+--quick, -q：快速导出
+--tables：覆盖 --databases or -B选项，后面所跟参数被视作表名
+--user=user_name, -u user_name：用户名
+--xml, -X：导出为xml文件
+
+1.备份全部数据库的数据和结构
+mysqldump -uroot -p123456 -A >F:\all.sql
+
+2.备份全部数据库的结构（加 -d 参数）
+mysqldump -uroot -p123456 -A-d>F:\all_struct.sql
+
+3.备份全部数据库的数据(加 -t 参数)
+mysqldump -uroot -p123456 -A-t>F:\all_data.sql
+
+4.备份单个数据库的数据和结构(,数据库名mydb)
+mysqldump -uroot-p123456 mydb>F:\mydb.sql
+注：需要加上-h参数
+
+5.备份单个数据库的结构
+mysqldump -uroot -p123456 mydb-d>F:\mydb.sql
+
+6.备份单个数据库的数据
+mysqldump -uroot -p123456 mydb-t>F:\mydb.sql
+
+7.备份多个表的数据和结构（数据，结构的单独备份方法与上同）
+mysqldump -uroot -p123456 mydb t1 t2>f:\multables.sql
+
+8.一次备份多个数据库
+mysqldump -uroot -p123456 --databases db1 db2>f:\muldbs.sql
+
+还原部分分（1）mysql命令行source方法 和 （2）系统命令行方法
+
+1.还原全部数据库:
+(1) mysql命令行：mysql>source f:\all.sql
+(2) 系统命令行： mysql -uroot -p123456 <f:\all.sql
+2.还原单个数据库(需指定数据库)
+(1) mysql>use mydb
+mysql>source f:\mydb.sql
+(2) mysql -uroot -p123456 mydb <f:\mydb.sql
+3.还原单个数据库的多个表(需指定数据库)
+(1) mysql>use mydb
+mysql>source f:\multables.sql
+(2) mysql -uroot -p123456 mydb<f:\multables.sql
+4.还原多个数据库，（一个备份文件里有多个数据库的备份，此时不需要指定数据库）
+(1) mysql命令行：mysql>source f:\muldbs.sql
+(2) 系统命令行： mysql -uroot -p123456<f:\muldbs.sql
